@@ -1,0 +1,1291 @@
+<!-- Little Stones — a kid-friendly way to learn the game of Go -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Little Stones · Learn Go</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#fbf3e2; --paper2:#f3e7cc; --ink:#3a2f25; --ink-soft:#6b5b48;
+    --wood:#e0b463; --wood-dark:#c9974a; --line:#7a5a2e;
+    --green:#5a9367; --green-dk:#3f7a4d; --coral:#ef7a5a; --coral-dk:#d85f3f;
+    --teal:#4aa7a0; --gold:#f0b429; --shadow:rgba(75,52,28,.25);
+    --black-stone:#2b2b30; --white-stone:#fdfdf8;
+    --rounded:Fredoka, "Trebuchet MS", system-ui, sans-serif;
+    --body:Nunito, system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:var(--body); color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #fff6e6 0%, transparent 60%),
+      radial-gradient(900px 500px at 0% 110%, #f6ecd2 0%, transparent 55%),
+      var(--paper);
+    overflow-x:hidden;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:18px 18px 60px}
+  h1,h2,h3{font-family:var(--rounded);font-weight:700;letter-spacing:.2px;margin:0}
+  button{font-family:var(--rounded);cursor:pointer;border:none}
+  .hidden{display:none !important}
+
+  /* ---------- top bar ---------- */
+  .topbar{display:flex;align-items:center;gap:12px;padding:10px 4px 18px}
+  .logo{display:flex;align-items:center;gap:12px}
+  .panda{width:46px;height:46px;flex:0 0 auto}
+  .logo h1{font-size:26px;line-height:1}
+  .logo span{display:block;font-size:12px;color:var(--ink-soft);font-family:var(--body);font-weight:700}
+  .spacer{flex:1}
+  .btn{padding:10px 16px;border-radius:14px;font-size:15px;font-weight:600;
+    background:var(--paper2);color:var(--ink);box-shadow:0 3px 0 var(--wood-dark);transition:transform .08s, box-shadow .08s}
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wood-dark)}
+  .btn.green{background:var(--green);color:#fff;box-shadow:0 3px 0 var(--green-dk)}
+  .btn.green:active{box-shadow:0 1px 0 var(--green-dk)}
+  .btn.coral{background:var(--coral);color:#fff;box-shadow:0 3px 0 var(--coral-dk)}
+  .btn.coral:active{box-shadow:0 1px 0 var(--coral-dk)}
+  .btn.ghost{background:transparent;box-shadow:none;color:var(--ink-soft);font-weight:700}
+  .btn.sm{padding:7px 12px;font-size:13px;border-radius:11px}
+  .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;transform:none}
+
+  /* ---------- home ---------- */
+  .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:26px;align-items:center;
+    background:linear-gradient(135deg,#fff8ea,#f6e8c9);border-radius:28px;padding:30px;
+    box-shadow:0 14px 40px var(--shadow);border:3px solid #fff}
+  .hero h2{font-size:34px;line-height:1.1}
+  .hero p{font-size:17px;color:var(--ink-soft);font-weight:600;line-height:1.5;margin:12px 0 20px}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .hero .cta .btn{font-size:17px;padding:14px 22px;border-radius:16px}
+  .heroart{display:flex;justify-content:center}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}
+  .card{background:#fff;border-radius:20px;padding:18px;border:2px solid #f0e3c6;box-shadow:0 8px 20px rgba(120,90,40,.12)}
+  .card .ic{font-size:30px}
+  .card h3{font-size:18px;margin:8px 0 6px}
+  .card p{margin:0;color:var(--ink-soft);font-weight:600;font-size:14px;line-height:1.45}
+
+  /* ---------- level select ---------- */
+  .section-title{display:flex;align-items:center;gap:10px;margin:6px 0 16px}
+  .section-title h2{font-size:24px}
+  .levelgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+  .lvl{background:#fff;border-radius:18px;padding:14px;border:2px solid #efe1c4;
+    box-shadow:0 6px 16px rgba(120,90,40,.1);text-align:left;position:relative;transition:transform .1s}
+  .lvl:hover{transform:translateY(-3px)}
+  .lvl .num{font-family:var(--rounded);font-weight:700;font-size:14px;color:#fff;background:var(--green);
+    width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center}
+  .lvl.tier2 .num{background:var(--teal)} .lvl.tier3 .num{background:var(--coral)}
+  .lvl h3{font-size:15px;margin:10px 0 4px}
+  .lvl .meta{font-size:12px;color:var(--ink-soft);font-weight:700}
+  .lvl .done{position:absolute;top:10px;right:12px;font-size:18px}
+  .tierhead{grid-column:1/-1;font-family:var(--rounded);font-weight:700;color:var(--ink-soft);
+    font-size:13px;letter-spacing:1px;text-transform:uppercase;margin-top:8px}
+
+  /* ---------- game layout ---------- */
+  .game{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:22px;align-items:start}
+  .boardpanel{background:linear-gradient(135deg,#fff8ea,#f3e6c8);border-radius:24px;padding:18px;
+    box-shadow:0 12px 34px var(--shadow);border:3px solid #fff}
+  .boardhead{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .turnpill{display:flex;align-items:center;gap:8px;background:#fff;border-radius:999px;padding:6px 14px 6px 8px;
+    font-family:var(--rounded);font-weight:600;font-size:14px;box-shadow:0 3px 0 #e7d6b0}
+  .dot{width:20px;height:20px;border-radius:50%;box-shadow:inset 0 -2px 3px rgba(0,0,0,.3)}
+  .dot.black{background:radial-gradient(circle at 35% 30%,#6a6a72,#1d1d22)}
+  .dot.white{background:radial-gradient(circle at 35% 30%,#fff,#d9d6c8)}
+  #boardWrap{position:relative;width:100%;max-width:620px;margin:0 auto;aspect-ratio:1/1}
+  #boardWrap svg{width:100%;height:100%;display:block;border-radius:14px}
+  .boardfoot{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;justify-content:center}
+
+  .levelnav{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;
+    background:#fff;border-radius:14px;padding:8px 10px;box-shadow:0 3px 0 #e7d6b0}
+  .lvlcount{font-family:var(--rounded);font-weight:600;font-size:14px;color:var(--green-dk)}
+  #nextLevelBtn{animation:pop .3s ease}
+  @keyframes pop{0%{transform:scale(.7)}100%{transform:scale(1)}}
+  .guideline{margin-top:12px;background:#eef7f0;border:2px solid var(--green);border-radius:14px;
+    padding:11px 13px;font-size:14px;font-weight:700;line-height:1.5;color:var(--green-dk)}
+  .guideline b{font-family:var(--rounded)}
+  .objective{margin-top:10px;background:#fff4ec;border:2px dashed var(--coral);border-radius:12px;
+    padding:9px 12px;font-size:13.5px;font-weight:700;color:var(--coral-dk)}
+
+  .side{display:flex;flex-direction:column;gap:16px}
+  .panelcard{background:#fff;border-radius:20px;padding:16px;border:2px solid #f0e3c6;box-shadow:0 8px 20px rgba(120,90,40,.1)}
+  .panelcard h3{font-size:15px;color:var(--green-dk);display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .panelcard.coral h3{color:var(--coral-dk)}
+  .teach{font-size:14.5px;line-height:1.55;color:var(--ink);font-weight:600}
+  .stat{display:flex;justify-content:space-between;font-weight:700;font-size:14px;padding:4px 0}
+  .stat span:last-child{font-family:var(--rounded)}
+  #log{max-height:230px;overflow:auto;display:flex;flex-direction:column;gap:7px}
+  .logitem{font-size:13.5px;line-height:1.45;background:var(--paper);border-radius:12px;padding:9px 11px;font-weight:600}
+  .logitem.tip{background:#eaf5ec;border-left:4px solid var(--green)}
+  .logitem.warn{background:#fdeee7;border-left:4px solid var(--coral)}
+  .logitem b{font-family:var(--rounded)}
+  .miniwood{display:inline-block;width:14px;height:14px;border-radius:3px;background:var(--wood);vertical-align:-2px;margin-right:4px}
+
+  /* ---------- modal / setup ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(58,47,37,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:18px}
+  .modal{background:var(--paper);border-radius:24px;padding:26px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);border:3px solid #fff}
+  .modal h2{font-size:23px;margin-bottom:6px}
+  .modal p{color:var(--ink-soft);font-weight:600;margin:0 0 16px}
+  .field{margin:14px 0}
+  .field label{display:block;font-family:var(--rounded);font-weight:600;font-size:14px;margin-bottom:6px}
+  .opts{display:flex;gap:8px;flex-wrap:wrap}
+  .opt{flex:1;min-width:90px;text-align:center;padding:12px;border-radius:14px;background:#fff;border:2px solid #ecdcbb;font-family:var(--rounded);font-weight:600;font-size:14px}
+  .opt.active{border-color:var(--green);background:#eaf5ec;color:var(--green-dk)}
+  input.code{width:100%;font-family:var(--rounded);font-size:24px;letter-spacing:6px;text-align:center;text-transform:uppercase;
+    padding:12px;border-radius:14px;border:2px solid #ecdcbb;background:#fff}
+  .codebig{font-family:var(--rounded);font-size:40px;letter-spacing:10px;text-align:center;color:var(--green-dk);
+    background:#fff;border-radius:16px;padding:14px;margin:10px 0;border:2px dashed var(--green)}
+  .note{font-size:12.5px;color:var(--ink-soft);font-weight:600;line-height:1.4}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(40px);opacity:0;
+    background:var(--ink);color:#fff;padding:12px 20px;border-radius:14px;font-family:var(--rounded);font-weight:600;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);transition:.25s;z-index:60;max-width:90vw;text-align:center}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+  /* stone placement pop-in */
+  .stone-pop{transform-box:fill-box;transform-origin:center;animation:stonepop .22s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes stonepop{0%{transform:scale(.2);opacity:.3}60%{transform:scale(1.14)}100%{transform:scale(1)}}
+  /* captured stone pop-off (overlay divs, independent of board re-render) */
+  .capfx{position:absolute;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);
+    pointer-events:none;animation:cappop .45s ease-out forwards;box-shadow:0 2px 4px rgba(75,52,28,.35);z-index:5}
+  .capfx.b{background:radial-gradient(circle at 35% 30%,#6c6c76,#1d1d22)}
+  .capfx.w{background:radial-gradient(circle at 35% 30%,#fff,#d6d1c0)}
+  @keyframes cappop{0%{transform:translate(-50%,-50%) scale(1);opacity:1}
+    45%{transform:translate(-50%,-50%) scale(1.4);opacity:.85}
+    100%{transform:translate(-50%,-50%) scale(0) rotate(20deg);opacity:0}}
+  /* confetti */
+  .confetti{position:fixed;width:9px;height:14px;border-radius:2px;pointer-events:none;z-index:80;
+    animation:confettifall 1.25s ease-out forwards}
+  @keyframes confettifall{0%{transform:translate(0,0) rotate(0);opacity:1}
+    100%{transform:translate(var(--dx),320px) rotate(var(--rot));opacity:0}}
+
+  @media(max-width:880px){
+    .hero{grid-template-columns:1fr}.heroart{display:none}
+    .game{grid-template-columns:1fr}.cards{grid-template-columns:1fr}
+    .side{order:2}
+  }
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="logo">
+      <svg class="panda" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="26" cy="22" r="13" fill="#2b2b30"/><circle cx="74" cy="22" r="13" fill="#2b2b30"/>
+        <circle cx="50" cy="52" r="34" fill="#fdfdf8" stroke="#e3dcc8" stroke-width="2"/>
+        <ellipse cx="36" cy="48" rx="9" ry="11" fill="#2b2b30"/><ellipse cx="64" cy="48" rx="9" ry="11" fill="#2b2b30"/>
+        <circle cx="37" cy="49" r="3" fill="#fff"/><circle cx="63" cy="49" r="3" fill="#fff"/>
+        <ellipse cx="50" cy="63" rx="5" ry="3.5" fill="#2b2b30"/>
+        <path d="M44 70 Q50 75 56 70" stroke="#2b2b30" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div><h1>Little Stones</h1><span>Learn the ancient game of Go</span></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost sm" id="soundBtn">🔊</button>
+    <button class="btn ghost sm" id="levelsBtn">📚 Levels</button>
+    <button class="btn ghost sm" id="homeBtn">Home</button>
+  </div>
+
+  <!-- HOME -->
+  <section id="home">
+    <div class="hero">
+      <div>
+        <h2>Hi! I'm Pip the panda. 🐾<br>Let's learn Go together!</h2>
+        <p>Go is a 2,500-year-old game played with black and white stones. The rules fit on one sticky note,
+           but the fun never ends. Place stones, surround empty space, and capture your friend's stones to win!</p>
+        <div class="cta">
+          <button class="btn green" id="startLearn">🎓 Start Learning (Level 1)</button>
+          <button class="btn" id="chooseLevel">📚 Choose a Level</button>
+          <button class="btn coral" id="startPvp">👫 Play with a Friend</button>
+        </div>
+      </div>
+      <div class="heroart">
+        <svg width="230" height="230" viewBox="0 0 230 230">
+          <rect x="15" y="15" width="200" height="200" rx="20" fill="#e0b463" stroke="#c9974a" stroke-width="3"/>
+          <g stroke="#7a5a2e" stroke-width="2" opacity=".8">
+            <path d="M55 55H175M55 95H175M55 135H175M55 175H175"/>
+            <path d="M55 55V175M95 55V175M135 55V175M175 55V175"/>
+          </g>
+          <circle cx="55" cy="95" r="15" fill="#2b2b30"/>
+          <circle cx="95" cy="135" r="15" fill="#fdfdf8" stroke="#ddd6c6" stroke-width="1.5"/>
+          <circle cx="135" cy="95" r="15" fill="#2b2b30"/>
+          <circle cx="135" cy="135" r="15" fill="#fdfdf8" stroke="#ddd6c6" stroke-width="1.5"/>
+          <circle cx="95" cy="95" r="5" fill="#7a5a2e"/>
+        </svg>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="ic">📈</div><h3>20 Levels</h3><p>Start tiny and easy, grow into a clever Go player. Each level teaches one new idea.</p></div>
+      <div class="card"><div class="ic">💡</div><h3>Smart Hints</h3><p>Stuck? Tap <b>Hint</b> and Pip shows the best move <em>and</em> explains why it's good.</p></div>
+      <div class="card"><div class="ic">🧩</div><h3>3 Board Sizes</h3><p>Cozy 9×9, medium 13×13, and the full 19×19 board the pros use.</p></div>
+    </div>
+  </section>
+
+  <!-- LEVELS -->
+  <section id="levels" class="hidden">
+    <div class="section-title"><span style="font-size:26px">🎓</span><h2>Choose your level</h2></div>
+    <div class="levelgrid" id="levelGrid"></div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="hidden">
+    <div class="game">
+      <div class="boardpanel">
+        <div class="boardhead">
+          <div class="turnpill"><div class="dot black" id="turnDot"></div><span id="turnText">Your turn</span></div>
+          <div class="spacer"></div>
+          <span id="boardLabel" class="note" style="font-weight:700"></span>
+        </div>
+        <div class="levelnav" id="levelNav">
+          <button class="btn sm" id="prevLvl">◀ Prev</button>
+          <span class="lvlcount" id="lvlCount">Level 1 / 20</span>
+          <button class="btn sm" id="nextLvl">Next ▶</button>
+          <button class="btn sm" id="allLvls">📚 All</button>
+          <div class="spacer"></div>
+          <button class="btn sm" id="guideToggle">🎓 Guide: On</button>
+        </div>
+        <div id="boardWrap"></div>
+        <div class="boardfoot">
+          <button class="btn green sm" id="hintBtn">💡 Hint</button>
+          <button class="btn sm" id="passBtn">Pass</button>
+          <button class="btn sm" id="undoBtn">↩️ Undo</button>
+          <button class="btn sm" id="scoreBtn">📊 Score</button>
+          <button class="btn coral sm" id="resignBtn">🏳️ Resign</button>
+          <button class="btn sm" id="restartBtn">↺ Restart</button>
+          <button class="btn green sm hidden" id="nextLevelBtn">Next Level →</button>
+        </div>
+      </div>
+      <div class="side">
+        <div class="panelcard" id="teachCard">
+          <h3>📖 <span id="teachTitle">Lesson</span></h3>
+          <div class="teach" id="teachText"></div>
+          <div class="guideline hidden" id="guideLine"></div>
+        </div>
+        <div class="panelcard">
+          <h3>🎯 Game</h3>
+          <div class="stat"><span>⚫ You captured</span><span id="capBlack">0</span></div>
+          <div class="stat"><span>⚪ Opponent captured</span><span id="capWhite">0</span></div>
+          <div class="stat" id="scoreRow" style="border-top:1px dashed #e7d6b0;margin-top:4px;padding-top:8px"><span>Estimated score</span><span id="scoreVal">—</span></div>
+        </div>
+        <div class="panelcard coral">
+          <h3>🗒️ Move notes</h3>
+          <div id="log"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- SETUP MODAL (2-player) -->
+<div class="overlay hidden" id="setupOverlay">
+  <div class="modal" id="setupModal"></div>
+</div>
+
+<!-- Firebase (optional): powers cross-device online play once you add your config below.
+     If these fail to load or no config is set, the app falls back automatically. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+
+<script>
+/* =========================================================================
+   GO RULES ENGINE  (pure functions)
+   board[row][col] : 0 empty, 1 black, 2 white.  x = col, y = row.
+   ========================================================================= */
+const EMPTY=0, BLACK=1, WHITE=2;
+const other = c => 3-c;
+
+function makeBoard(n){return Array.from({length:n},()=>new Array(n).fill(EMPTY));}
+function cloneBoard(b){return b.map(r=>r.slice());}
+function neighbors(x,y,n){
+  const r=[];
+  if(x>0)r.push([x-1,y]); if(x<n-1)r.push([x+1,y]);
+  if(y>0)r.push([x,y-1]); if(y<n-1)r.push([x,y+1]);
+  return r;
+}
+function diagonals(x,y,n){
+  const r=[];for(const dx of[-1,1])for(const dy of[-1,1]){const nx=x+dx,ny=y+dy;if(nx>=0&&ny>=0&&nx<n&&ny<n)r.push([nx,ny]);}return r;
+}
+// connected group + its liberties
+function group(b,x,y){
+  const n=b.length, color=b[y][x], stones=[], libs=new Set(), seen=new Set([x+','+y]);
+  const stack=[[x,y]];
+  while(stack.length){
+    const [cx,cy]=stack.pop(); stones.push([cx,cy]);
+    for(const [nx,ny] of neighbors(cx,cy,n)){
+      const v=b[ny][nx];
+      if(v===EMPTY) libs.add(nx+','+ny);
+      else if(v===color && !seen.has(nx+','+ny)){seen.add(nx+','+ny);stack.push([nx,ny]);}
+    }
+  }
+  return {stones, liberties:libs};
+}
+// attempt a move; returns {legal, board, captured[], koPoint}
+function tryMove(b,x,y,color,koPoint){
+  if(b[y][x]!==EMPTY) return {legal:false, reason:'taken'};
+  if(koPoint && koPoint[0]===x && koPoint[1]===y) return {legal:false, reason:'ko'};
+  const n=b.length, nb=cloneBoard(b); nb[y][x]=color;
+  const opp=other(color); const captured=[];
+  for(const [nx,ny] of neighbors(x,y,n)){
+    if(nb[ny][nx]===opp){
+      const g=group(nb,nx,ny);
+      if(g.liberties.size===0) for(const [sx,sy] of g.stones){ if(nb[sy][sx]!==EMPTY){nb[sy][sx]=EMPTY;captured.push([sx,sy]);} }
+    }
+  }
+  const mine=group(nb,x,y);
+  if(mine.liberties.size===0) return {legal:false, reason:'suicide'};
+  let newKo=null;
+  if(captured.length===1 && mine.stones.length===1 && mine.liberties.size===1) newKo=captured[0];
+  return {legal:true, board:nb, captured, koPoint:newKo};
+}
+// is (x,y) a real eye for color (surrounded orthogonally + most diagonals)
+function isEye(b,x,y,color){
+  const n=b.length;
+  for(const [nx,ny] of neighbors(x,y,n)) if(b[ny][nx]!==color) return false;
+  const diag=diagonals(x,y,n); let bad=0;
+  const corner = diag.length<4;
+  for(const [dx,dy] of diag) if(b[dy][dx]===other(color)) bad++;
+  return corner ? bad===0 : bad<=1;
+}
+// area (Chinese-style) scoring; assumes stones on board are alive
+function scoreBoard(b,komi){
+  const n=b.length; let black=0,white=0;
+  const seen=Array.from({length:n},()=>new Array(n).fill(false));
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    if(b[y][x]===BLACK)black++; else if(b[y][x]===WHITE)white++;
+    else if(!seen[y][x]){
+      const region=[],stack=[[x,y]],border=new Set(); seen[y][x]=true;
+      while(stack.length){const [cx,cy]=stack.pop();region.push([cx,cy]);
+        for(const [nx,ny] of neighbors(cx,cy,n)){const v=b[ny][nx];
+          if(v===EMPTY){if(!seen[ny][nx]){seen[ny][nx]=true;stack.push([nx,ny]);}}
+          else border.add(v);}}
+      if(border.size===1){border.has(BLACK)?black+=region.length:white+=region.length;}
+    }
+  }
+  return {black, white:white+komi};
+}
+
+/* =========================================================================
+   AI + MOVE ANALYSIS  (also powers the Hint system)
+   ========================================================================= */
+function positionalValue(x,y,n){
+  // prefer 3rd/4th line distance from edge; small center pull
+  const d=Math.min(x,y,n-1-x,n-1-y);
+  let v;
+  if(d===0)v=-2; else if(d===1)v=1; else if(d===2)v=4; else if(d===3)v=3.5; else v=2.5;
+  const c=(n-1)/2; v+= 1.2 - (Math.abs(x-c)+Math.abs(y-c))/(n*1.6);
+  return v;
+}
+function nearStones(b,x,y){ // bonus for playing close to existing stones
+  const n=b.length;let close=0;
+  for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+    const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=n||ny>=n)continue;
+    if(b[ny][nx]!==EMPTY){const dist=Math.abs(dx)+Math.abs(dy);if(dist<=1)close+=2;else if(dist<=2)close+=1;}
+  }
+  return close;
+}
+// returns null if illegal, else {x,y,score,tags,captured,myLib}
+function analyzeMove(b,x,y,color,koPoint){
+  const res=tryMove(b,x,y,color,koPoint);
+  if(!res.legal) return null;
+  const n=b.length, nb=res.board, opp=other(color);
+  const tags=[]; let s=0;
+  if(res.captured.length>0){ s+=res.captured.length*14+10; tags.push('capture'); }
+  // own group after move
+  const myg=group(nb,x,y); const myLib=myg.liberties.size;
+  // were any of my touching groups in atari before? did we rescue them?
+  let savedAtari=false, hadFriend=0;
+  for(const [nx,ny] of neighbors(x,y,n)){
+    if(b[ny][nx]===color){ hadFriend++; const og=group(b,nx,ny); if(og.liberties.size===1)savedAtari=true; }
+  }
+  if(savedAtari && myLib>=2){ s+=11; tags.push('save'); }
+  if(myLib===1 && res.captured.length===0){ s-=9; tags.push('selfatari'); }
+  // put opponent in atari?
+  for(const [nx,ny] of neighbors(x,y,n)){
+    if(nb[ny][nx]===opp){ const og=group(nb,nx,ny); if(og.liberties.size===1){ s+=7; if(!tags.includes('atari'))tags.push('atari'); } }
+  }
+  if(hadFriend>=2){ s+=4; tags.push('connect'); }
+  s += positionalValue(x,y,n) + nearStones(b,x,y)*0.8;
+  return {x,y,score:s,tags,captured:res.captured.length,myLib};
+}
+function legalMoves(b,color,koPoint,avoidEyes,avoidSelfAtari){
+  const n=b.length, out=[];
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    if(b[y][x]!==EMPTY)continue;
+    if(avoidEyes && isEye(b,x,y,color)) continue;
+    const a=analyzeMove(b,x,y,color,koPoint);
+    if(!a)continue;
+    if(avoidSelfAtari && a.tags.includes('selfatari')) continue;
+    out.push(a);
+  }
+  return out;
+}
+// strength 1..20 -> pick a move
+function aiChoose(b,color,strength,koPoint){
+  const avoidEyes = strength>=4;
+  const avoidSA   = strength>=6;
+  let moves=legalMoves(b,color,koPoint,avoidEyes,avoidSA);
+  if(moves.length===0) moves=legalMoves(b,color,koPoint,false,false);
+  if(moves.length===0) return null; // pass
+  // very weak levels sometimes play totally random
+  if(strength<=3 && Math.random()<0.45) return moves[Math.floor(Math.random()*moves.length)];
+  const jitter=(21-strength)*1.6;
+  let best=null,bestS=-1e9;
+  for(const m of moves){ const sc=m.score + Math.random()*jitter; if(sc>bestS){bestS=sc;best=m;} }
+  return best;
+}
+// strong, deterministic-ish suggestion for the human (Hint)
+function bestHint(b,color,koPoint){
+  let moves=legalMoves(b,color,koPoint,true,true);
+  if(moves.length===0) moves=legalMoves(b,color,koPoint,true,false);
+  if(moves.length===0) moves=legalMoves(b,color,koPoint,false,false);
+  if(moves.length===0) return null;
+  moves.sort((a,b)=>b.score-a.score);
+  return moves[0];
+}
+function annotate(move, who){
+  if(!move) return "Sometimes the best move is to pass — when there are no useful points left.";
+  const t=move.tags, me = who==='you'?'your':'their', subj = who==='you'?'You':'Pip';
+  if(t.includes('capture')) return `🎉 ${subj} can capture ${move.captured} stone${move.captured>1?'s':''} here! A stone with no liberties (empty spaces around it) is taken off the board.`;
+  if(t.includes('save'))    return `🛟 One of ${me} groups had only ONE liberty left (that's called <b>atari</b>!). Playing here gives it more breathing space so it survives.`;
+  if(t.includes('atari'))   return `⚔️ This puts the opponent in <b>atari</b> — their group has only one liberty left. They must defend or lose those stones.`;
+  if(t.includes('connect')) return `🔗 This connects ${me} stones together. Joined stones share liberties and are much harder to capture.`;
+  return `🌱 A calm, building move. Early on, the corners and sides are easiest to turn into your own territory, so playing on the 3rd line is strong.`;
+}
+
+/* =========================================================================
+   CURRICULUM — 20 levels (size + concept + AI strength)
+   ========================================================================= */
+const LEVELS=[
+  {t:"Your First Capture", d:9, s:1, obj:"Capture the white stone.",
+   txt:"Welcome to Go! 🐾 You play the <b>black</b> stones. The empty spots touching a stone are its <b>liberties</b> (breathing spaces). Take away ALL of them and you <b>capture</b> the stone! This white stone has one liberty left — the glowing spot.",
+   setup:[[4,4,WHITE],[3,4,BLACK],[5,4,BLACK],[4,3,BLACK]],
+   puzzle:{steps:[{glow:[4,5],tip:"Tap the glowing dot to take white's last liberty!",ok:"🎉 Captured! With zero liberties, the stone comes off the board."}]}},
+
+  {t:"Capture on the Edge", d:9, s:2, obj:"Capture the stone on the edge.",
+   txt:"Stones in the middle have 4 liberties, but a stone on the <b>edge</b> has only 3 — so it's easier to capture. Fewer breathing spaces means trouble for white!",
+   setup:[[4,0,WHITE],[3,0,BLACK],[5,0,BLACK]],
+   puzzle:{steps:[{glow:[4,1],tip:"Fill the last liberty below the edge stone.",ok:"🎉 Edge stones fall fast — captured!"}]}},
+
+  {t:"Capture in the Corner", d:9, s:3, obj:"Capture the corner stone.",
+   txt:"The <b>corner</b> is the most dangerous place for a lonely stone — it has just 2 liberties! Take the last one and it's gone.",
+   setup:[[0,0,WHITE],[1,0,BLACK]],
+   puzzle:{steps:[{glow:[0,1],tip:"One liberty left in the corner — take it!",ok:"🎉 Corner captured! Corners are the easiest place to catch stones."}]}},
+
+  {t:"Capture a Group", d:9, s:4, obj:"Capture BOTH white stones at once.",
+   txt:"Touching stones of the same colour form a <b>group</b> and share their liberties. To capture a group you must fill its <b>last shared</b> liberty. These two whites share one!",
+   setup:[[4,4,WHITE],[4,5,WHITE],[3,4,BLACK],[5,4,BLACK],[4,3,BLACK],[3,5,BLACK],[5,5,BLACK]],
+   puzzle:{steps:[{glow:[4,6],tip:"Fill the group's last liberty to take both stones.",ok:"🎉 Two stones at once! Groups live or die together."}]}},
+
+  {t:"Atari, then Capture", d:9, s:5, obj:"Put white in atari, then capture it.",
+   txt:"<b>Atari</b> means one liberty left — one move from capture! Sometimes you can't capture right away: first put white in atari, and if it runs the wrong way, you catch it anyway.",
+   setup:[[1,0,WHITE],[2,0,BLACK]],
+   puzzle:{steps:[
+     {glow:[1,1],tip:"Play below to put white in ATARI (one liberty left).",ok:"⚔️ Atari! White has just one breath left and tries to run to the corner…",reply:[0,0],replySay:"⚪ White runs into the corner — but corners are a trap!"},
+     {glow:[0,1],tip:"White ran into the corner. Take its last liberty!",ok:"🎉 Caught! Chasing a stone to the edge or corner captures it."}]}},
+
+  {t:"The Ladder", d:9, s:6, obj:"Chase the stone in a zig-zag until it's caught.",
+   txt:"A <b>ladder</b> is a staircase chase! Keep white in atari every move. It runs, you chase, it runs, you chase — all the way to the edge where it has nowhere left to go. 🪜",
+   setup:[[2,2,WHITE],[1,2,BLACK],[2,1,BLACK],[3,3,BLACK]],
+   puzzle:{steps:[
+     {glow:[3,2],tip:"Start the ladder — put white in atari.",ok:"⚔️ Atari! White runs…",reply:[2,3],replySay:"⚪ White slides down."},
+     {glow:[2,4],tip:"Keep chasing — atari again from the side!",ok:"⚔️ Atari again!",reply:[1,3],replySay:"⚪ White keeps running."},
+     {glow:[0,3],tip:"Stay on the staircase — atari!",ok:"⚔️ Almost there!",reply:[1,4],replySay:"⚪ White is nearly at the edge."},
+     {glow:[1,5],tip:"Push it to the very edge!",ok:"⚔️ Final atari — nowhere left to run!",reply:[0,4],replySay:"⚪ White hits the wall."},
+     {glow:[0,5],tip:"Capture the whole ladder!",ok:"🎉 The whole snake is captured! That's the power of the ladder. 🪜"}]}},
+
+  {t:"Catch the Cutter", d:9, s:7, obj:"Chase the lone white stone and capture it.",
+   txt:"This white stone jumped in to <b>cut</b> your stones apart — don't let it escape! It only has two liberties. Chase it toward the corner with a short ladder, keeping it in atari every move.",
+   setup:[[1,1,WHITE],[0,1,BLACK],[1,0,BLACK],[2,2,BLACK]],
+   puzzle:{steps:[
+     {glow:[2,1],tip:"Put the cutter in atari.",ok:"⚔️ Atari! It tries to run…",reply:[1,2],replySay:"⚪ White slips downward."},
+     {glow:[1,3],tip:"Keep it in atari — chase it to the edge!",ok:"⚔️ Atari again — it's almost cornered!",reply:[0,2],replySay:"⚪ White reaches the edge with nowhere to go."},
+     {glow:[0,3],tip:"Capture the whole chain!",ok:"🎉 Caught the cutter! Three stones gone. Cutters that get chased usually die."}]}},
+
+  {t:"Double Atari", d:9, s:8, obj:"Attack two stones with one move.",
+   txt:"A <b>double atari</b> puts TWO groups in atari at the same time! Your opponent can only save one — you capture the other. One move, two threats. 😎",
+   setup:[[1,1,WHITE],[3,1,WHITE],[0,1,BLACK],[1,0,BLACK],[4,1,BLACK],[3,0,BLACK]],
+   puzzle:{steps:[
+     {glow:[2,1],tip:"Play between them — atari BOTH stones at once!",ok:"⚔️⚔️ Double atari! White can only rescue one stone…",reply:[1,2],replySay:"⚪ White saves the left stone."},
+     {glow:[3,2],tip:"Now capture the stone white couldn't save!",ok:"🎉 Gotcha! Double atari wins you a free stone every time."}]}},
+
+  {t:"Surround the Group", d:9, s:9, obj:"Capture the whole white group.",
+   txt:"Bigger groups need more liberties filled. Put the group in atari, and if it runs, keep squeezing until every breath is gone. Patience captures! ",
+   setup:[[1,0,WHITE],[2,0,WHITE],[3,0,WHITE],[0,0,BLACK],[4,0,BLACK],[1,1,BLACK]],
+   puzzle:{steps:[
+     {glow:[3,1],tip:"Put the 3-stone group in atari.",ok:"⚔️ Atari! The group is squeezed and tries to wriggle out…",reply:[2,1],replySay:"⚪ White extends down — but it's still trapped!"},
+     {glow:[2,2],tip:"Take the final liberty to capture all of them!",ok:"🎉 Four stones captured! Surround every liberty and big groups fall."}]}},
+
+  {t:"Master Capture", d:9, s:10, obj:"Find the one move that captures the whole wall.",
+   txt:"Graduation puzzle! 🎓 This white wall is surrounded on every side but one. Use your sharp eyes — find the single last liberty and capture all five stones at once. You've got this, future Go master! 🏆",
+   setup:[[2,2,WHITE],[3,2,WHITE],[4,2,WHITE],[3,1,WHITE],[3,3,WHITE],
+          [2,1,BLACK],[4,1,BLACK],[1,2,BLACK],[5,2,BLACK],[2,3,BLACK],[4,3,BLACK],[3,4,BLACK]],
+   puzzle:{steps:[{glow:[3,0],tip:"Find the wall's one remaining liberty at the top!",ok:"🏆 FIVE stones captured in one move! You've mastered capturing. On to bigger boards!"}]}},
+
+  {t:"Territory Basics",   d:13,s:11, obj:"Surround more empty points than Pip.", txt:"Now full games begin! 🎮 Go is really about <b>territory</b> — empty space surrounded only by your stones. Use everything you learned about capturing to protect your area. Whoever surrounds more points wins."},
+  {t:"Corners First",      d:13,s:12, obj:"Take corners early and win the board.", txt:"Wise players take corners, then sides, then the centre. Corners need the fewest stones to enclose, so they're the best value early. Pip will suggest good points each turn."},
+  {t:"Walls & Influence",  d:13,s:13, obj:"Build a wall and use it to win.", txt:"A solid wall faces outward and controls the whole area in front of it. Trade a little territory for a powerful, thick wall."},
+  {t:"Reducing",           d:13,s:14, obj:"Shrink Pip's area without dying.", txt:"If Pip builds a big area, jump in lightly to shrink it before it grows too large. Don't be greedy — stay safe and keep your stones connected."},
+  {t:"Invading",           d:13,s:15, obj:"Live inside Pip's area and win.", txt:"Sometimes you must place a stone deep in enemy space and make two eyes to live. Risky, but it can flip the game!"},
+  {t:"Endgame Points",     d:13,s:16, obj:"Win the border fights for the points.", txt:"In the endgame, fight over the borders between territories. Each point matters — play the biggest boundary moves first."},
+  {t:"Full Board",         d:19,s:17, obj:"Take corners, connect, and out-score Pip.", txt:"The full 19×19 board the masters use! Spread out, take corners, then connect your areas into one big framework."},
+  {t:"Reading Ahead",      d:19,s:18, obj:"Out-think Pip and win on points.", txt:"Before you play, picture Pip's reply, then yours. Thinking two or three moves ahead is the secret to strong play."},
+  {t:"Whole-Board View",   d:19,s:19, obj:"Find the biggest points and win.", txt:"Don't get lost in one corner. Always ask: where is the biggest, most urgent point on the WHOLE board right now?"},
+  {t:"Master Challenge",   d:19,s:20, obj:"Beat Pip's strongest play to become a master!", txt:"The final test against Pip's best. Use everything: capturing, corners, walls, eyes, and reading ahead. Good luck, Go master! 🏆"},
+];
+const KOMI = sz => (sz===9?5.5:6.5);
+
+/* =========================================================================
+   APP STATE + helpers
+   ========================================================================= */
+let G=null;            // current game state
+let progress = loadProgress();
+const $=id=>document.getElementById(id);
+function show(id){['home','levels','game'].forEach(s=>$(s).classList.toggle('hidden',s!==id));}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);}
+
+function loadProgress(){ return {done:{}, _mem:true}; } // in-memory; mirrored to window.storage if available
+async function saveProgress(){
+  try{ if(window.storage) await window.storage.set('ls_progress', JSON.stringify(progress.done), false); }catch(e){}
+}
+async function hydrateProgress(){
+  try{ if(window.storage){ const r=await window.storage.get('ls_progress', false); if(r&&r.value) progress.done=JSON.parse(r.value); } }
+  catch(e){}
+  try{ if(window.storage){ const m=await window.storage.get('ls_mute', false); if(m&&m.value==='1'){ muted=true; const b=$('soundBtn'); if(b)b.textContent='🔇'; } } }
+  catch(e){}
+  renderLevels();
+}
+
+/* =========================================================================
+   SOUND EFFECTS (synthesized with Web Audio — no asset files needed)
+   ========================================================================= */
+let actx=null, muted=false;
+function audioCtx(){
+  if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
+  if(actx.state==='suspended') actx.resume();
+  return actx;
+}
+function tone({freq=300,dur=0.12,type='sine',vol=0.18,slideTo=null,delay=0}){
+  const c=audioCtx(); if(!c||muted)return;
+  const t=c.currentTime+delay, o=c.createOscillator(), g=c.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq,t);
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(Math.max(20,slideTo),t+dur);
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g).connect(c.destination); o.start(t); o.stop(t+dur+0.03);
+}
+const sfx={
+  place(){ tone({freq:520,type:'square',dur:0.025,vol:0.12}); tone({freq:200,type:'triangle',dur:0.10,vol:0.22,slideTo:150}); },
+  capture(n){ const k=Math.min(n,5); for(let i=0;i<k;i++) tone({freq:680-i*70,type:'triangle',dur:0.14,vol:0.22,slideTo:300-i*30,delay:i*0.05}); tone({freq:140,type:'sine',dur:0.2,vol:0.15,slideTo:90,delay:0.02}); },
+  atari(){ tone({freq:660,type:'sine',dur:0.09,vol:0.16}); tone({freq:880,type:'sine',dur:0.11,vol:0.16,delay:0.1}); },
+  wrong(){ tone({freq:180,type:'sine',dur:0.18,vol:0.18,slideTo:110}); },
+  undo(){ tone({freq:400,type:'triangle',dur:0.14,vol:0.16,slideTo:250}); },
+  win(){ [523,659,784,1047].forEach((f,i)=>tone({freq:f,type:'triangle',dur:0.22,vol:0.2,delay:i*0.12})); },
+  click(){ tone({freq:330,type:'square',dur:0.02,vol:0.08}); }
+};
+function confetti(){
+  const colors=['#ef7a5a','#5a9367','#f0b429','#4aa7a0','#fdfdf8','#d85f3f'];
+  for(let i=0;i<40;i++){
+    const d=document.createElement('div'); d.className='confetti';
+    d.style.left=(50+(Math.random()*46-23))+'%'; d.style.top='42%';
+    d.style.background=colors[i%colors.length];
+    d.style.setProperty('--dx',(Math.random()*360-180)+'px');
+    d.style.setProperty('--rot',(Math.random()*720-360)+'deg');
+    d.style.animationDelay=(Math.random()*0.18)+'s';
+    document.body.appendChild(d); setTimeout(()=>d.remove(),1500);
+  }
+}
+
+/* =========================================================================
+   BOARD RENDERING (SVG)
+   ========================================================================= */
+const M=34, GAP=30;          // viewBox margin + spacing between lines
+function starPoints(n){
+  if(n===9)  return [[2,2],[6,2],[2,6],[6,6],[4,4]];
+  if(n===13) return [[3,3],[9,3],[3,9],[9,9],[6,6]];
+  if(n===19) return [[3,3],[9,3],[15,3],[3,9],[9,9],[15,9],[3,15],[9,15],[15,15]];
+  return [];
+}
+function px(i){return M+i*GAP;}
+function renderBoard(){
+  const n=G.size, total=M*2+(n-1)*GAP;
+  const last=G.lastMove, hint=G.hintMove;
+  let s=`<svg viewBox="0 0 ${total} ${total}" id="goSvg">`;
+  s+=`<defs>
+      <radialGradient id="bg" cx="35%" cy="30%"><stop offset="0%" stop-color="#ecc079"/><stop offset="100%" stop-color="#d8a44f"/></radialGradient>
+      <radialGradient id="bs" cx="35%" cy="30%"><stop offset="0%" stop-color="#6c6c76"/><stop offset="60%" stop-color="#2b2b30"/><stop offset="100%" stop-color="#141417"/></radialGradient>
+      <radialGradient id="ws" cx="35%" cy="30%"><stop offset="0%" stop-color="#ffffff"/><stop offset="80%" stop-color="#f3efe2"/><stop offset="100%" stop-color="#d6d1c0"/></radialGradient>
+      <filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#3a2f25" flood-opacity="0.35"/></filter>
+    </defs>`;
+  s+=`<rect x="0" y="0" width="${total}" height="${total}" rx="14" fill="url(#bg)"/>`;
+  // grid
+  s+=`<g stroke="#5e431f" stroke-width="1.6" opacity="0.85">`;
+  for(let i=0;i<n;i++){
+    s+=`<line x1="${px(0)}" y1="${px(i)}" x2="${px(n-1)}" y2="${px(i)}"/>`;
+    s+=`<line x1="${px(i)}" y1="${px(0)}" x2="${px(i)}" y2="${px(n-1)}"/>`;
+  }
+  s+=`</g>`;
+  // stars
+  for(const [sx,sy] of starPoints(n)) s+=`<circle cx="${px(sx)}" cy="${px(sy)}" r="3.4" fill="#5e431f"/>`;
+  // stones
+  const r=GAP*0.46;
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    const v=G.board[y][x]; if(v===EMPTY)continue;
+    const isLast = last && last[0]===x && last[1]===y;
+    const popCls = (isLast && G.animateLast) ? ' class="stone-pop"' : '';
+    s+=`<circle${popCls} cx="${px(x)}" cy="${px(y)}" r="${r}" fill="${v===BLACK?'url(#bs)':'url(#ws)'}" filter="url(#sh)" ${v===WHITE?'stroke="#cfc9b6" stroke-width="0.6"':''}/>`;
+    if(isLast)
+      s+=`<circle cx="${px(x)}" cy="${px(y)}" r="${r*0.42}" fill="none" stroke="${v===BLACK?'#fff':'#2b2b30'}" stroke-width="2.2"/>`;
+  }
+  // hint marker layer (updated independently via setHint)
+  s+=`<g id="hintG"></g>`;
+  // ghost (hover)
+  s+=`<circle id="ghost" r="${r}" fill="${G.toMove===BLACK?'url(#bs)':'url(#ws)'}" opacity="0" pointer-events="none"/>`;
+  s+=`</svg>`;
+  const wrap=$('boardWrap');
+  let holder=document.getElementById('boardSvgHolder');
+  if(!holder){
+    wrap.innerHTML='<div id="boardSvgHolder" style="position:absolute;inset:0"></div><div id="fxOverlay" style="position:absolute;inset:0;pointer-events:none"></div>';
+    holder=document.getElementById('boardSvgHolder');
+  }
+  holder.innerHTML=s;
+  G.animateLast=false;
+  const svg=$('goSvg');
+  svg.addEventListener('click',onBoardClick);
+  svg.addEventListener('mousemove',onBoardHover);
+  svg.addEventListener('mouseleave',()=>{const g=$('ghost');if(g)g.setAttribute('opacity','0');});
+  setHint();
+}
+// Hint glow lives in its own SVG group so we can update it WITHOUT rebuilding the board
+// (that keeps pop-in and capture animations from being interrupted).
+function setHint(){
+  const g=document.getElementById('hintG'); if(!g)return;
+  if(G.hintMove){
+    const r=GAP*0.46, [hx,hy]=G.hintMove;
+    g.innerHTML=`<circle cx="${px(hx)}" cy="${px(hy)}" r="${r*0.85}" fill="none" stroke="#ef7a5a" stroke-width="3.2" stroke-dasharray="4 4"><animate attributeName="opacity" values="1;0.3;1" dur="1.1s" repeatCount="indefinite"/></circle>`;
+  } else g.innerHTML='';
+}
+// Captured stones "pop off" as overlay divs (not part of the board SVG, so re-renders don't kill them)
+function playCaptureFx(list){
+  const wrap=document.getElementById('fxOverlay'); if(!wrap||!list||!list.length)return;
+  const total=M*2+(G.size-1)*GAP, dia=(2*GAP*0.46)/total*100;
+  list.forEach(({x,y,color},i)=>{
+    const d=document.createElement('div');
+    d.className='capfx '+(color===BLACK?'b':'w');
+    d.style.left=(px(x)/total*100)+'%';
+    d.style.top=(px(y)/total*100)+'%';
+    d.style.width=dia+'%';
+    d.style.animationDelay=(i*35)+'ms';
+    wrap.appendChild(d);
+    setTimeout(()=>d.remove(), 520+i*35);
+  });
+}
+function svgCoords(evt){
+  const svg=$('goSvg'), rect=svg.getBoundingClientRect();
+  const total=M*2+(G.size-1)*GAP;
+  const cx=(evt.clientX-rect.left)/rect.width*total;
+  const cy=(evt.clientY-rect.top)/rect.height*total;
+  const x=Math.round((cx-M)/GAP), y=Math.round((cy-M)/GAP);
+  if(x<0||y<0||x>=G.size||y>=G.size)return null;
+  // distance check so taps near a line don't misfire wildly
+  const dx=cx-px(x), dy=cy-px(y);
+  if(Math.hypot(dx,dy)>GAP*0.6)return null;
+  return [x,y];
+}
+function onBoardHover(e){
+  const g=$('ghost'); if(!g)return;
+  if(!canHumanPlay()){g.setAttribute('opacity','0');return;}
+  const c=svgCoords(e);
+  if(!c||G.board[c[1]][c[0]]!==EMPTY){g.setAttribute('opacity','0');return;}
+  g.setAttribute('cx',px(c[0]));g.setAttribute('cy',px(c[1]));g.setAttribute('opacity','0.45');
+}
+
+/* =========================================================================
+   GAME FLOW
+   ========================================================================= */
+function newGame(opts){
+  if(typeof G==='object' && G && G._timer) clearTimeout(G._timer);
+  G={
+    mode:opts.mode, size:opts.size, board:makeBoard(opts.size),
+    toMove:BLACK, koPoint:null, captures:{1:0,2:0}, passes:0,
+    lastMove:null, hintMove:null, gameOver:false, komi:KOMI(opts.size),
+    level:opts.level??null, humanColor:opts.humanColor??BLACK,
+    aiStrength:opts.aiStrength??10, log:[], puzzle:null,
+    autoGuide:(opts.mode==='learn'),
+    history:[], _timer:null, _busy:false,
+    online:opts.online??null   // {code, role, seq}
+  };
+  $('boardLabel').textContent=`${opts.size}×${opts.size} board`;
+  $('nextLevelBtn').classList.add('hidden');
+  if(opts.level!=null){
+    const L=LEVELS[opts.level-1];
+    if(L.setup) for(const [x,y,c] of L.setup) G.board[y][x]=c;   // preset sample board
+    G.puzzle = L.puzzle ? {steps:L.puzzle.steps, idx:0} : null;
+    $('teachCard').classList.remove('hidden');
+    $('teachTitle').textContent=`Level ${opts.level}: ${L.t}`;
+    $('teachText').innerHTML=L.txt + (L.obj?`<div class="objective">🎯 Goal: ${L.obj}</div>`:'');
+  }else{
+    $('teachTitle').textContent = G.mode==='pvp-online'?'Online match':'Pass & Play';
+    $('teachText').innerHTML = G.mode==='pvp-online'
+      ? `You are playing <b>${G.online.role===BLACK?'Black ⚫':'White ⚪'}</b>. Black moves first. The board updates automatically when your friend plays.`
+      : `Two players, one screen. Black goes first, then take turns tapping the board. The notes panel keeps track of captures and atari for you both!`;
+  }
+  show('game');
+  if(G.mode==='learn'){
+    const L=LEVELS[opts.level-1];
+    pushLog(G.puzzle
+      ? `Puzzle! ${L.obj} Follow the glowing dot — Pip will guide every step. 🐾`
+      : `Level ${opts.level}: ${L.t}. You are Black ⚫ and move first. Pip's tip appears each turn!`,'tip');
+  } else pushLog('New game! Black ⚫ moves first.','tip');
+  updateLevelNav(); updateUI(); renderBoard(); showGuide();
+}
+
+function updateLevelNav(){
+  const learn = G.mode==='learn' && G.level!=null;
+  $('levelNav').classList.toggle('hidden', !learn);
+  if(!learn) return;
+  $('lvlCount').textContent=`Level ${G.level} / 20`;
+  $('prevLvl').disabled = G.level<=1;
+  $('nextLvl').disabled = G.level>=20;
+  $('guideToggle').textContent = `🎓 Guide: ${G.autoGuide?'On':'Off'}`;
+}
+function gotoLevel(n){
+  if(n<1||n>20)return; const L=LEVELS[n-1];
+  stopPolling(); newGame({mode:'learn',size:L.d,level:n,aiStrength:L.s,humanColor:BLACK});
+}
+function showNextLevel(){ if(G.mode==='learn' && G.level<20) $('nextLevelBtn').classList.remove('hidden'); }
+
+// Auto-guidance: highlight a suggested move and explain it, every human turn.
+function showGuide(){
+  const gl=$('guideLine');
+  if(G.mode!=='learn'||G.gameOver||!G.autoGuide){ G.hintMove=null; gl.classList.add('hidden'); setHint(); return; }
+  if(G.puzzle){
+    const step=G.puzzle.steps[G.puzzle.idx];
+    if(!step){ G.hintMove=null; gl.classList.add('hidden'); setHint(); return; }
+    G.hintMove=[step.glow[0],step.glow[1]];
+    gl.innerHTML=`👉 <b>Step ${G.puzzle.idx+1} of ${G.puzzle.steps.length} (${coordName(step.glow[0],step.glow[1])}):</b> ${step.tip}`;
+    gl.classList.remove('hidden'); setHint(); return;
+  }
+  if(G.toMove!==G.humanColor){ G.hintMove=null; gl.classList.add('hidden'); setHint(); return; }
+  const m=bestHint(G.board,G.humanColor,G.koPoint);
+  if(!m){ G.hintMove=null; gl.innerHTML="👍 No urgent move left — you can <b>Pass</b> to finish and count the score."; gl.classList.remove('hidden'); setHint(); return; }
+  G.hintMove=[m.x,m.y]; gl.innerHTML=`👉 <b>Pip suggests ${coordName(m.x,m.y)}:</b> ${annotate(m,'you')}`;
+  gl.classList.remove('hidden'); setHint();
+}
+
+// ---- Undo (move back up to 3 steps) ----
+function snapshotForUndo(){
+  if(!G || G.mode==='pvp-online') return;     // undo disabled for synced online games
+  G.history.push({
+    board:cloneBoard(G.board),
+    cap:{1:G.captures[1],2:G.captures[2]},
+    koPoint:G.koPoint?[G.koPoint[0],G.koPoint[1]]:null,
+    lastMove:G.lastMove?[G.lastMove[0],G.lastMove[1]]:null,
+    passes:G.passes, toMove:G.toMove, gameOver:G.gameOver,
+    pidx:G.puzzle?G.puzzle.idx:0,
+    log:G.log.map(e=>({html:e.html,cls:e.cls}))
+  });
+  while(G.history.length>3) G.history.shift();   // keep at most 3 steps
+  updateUndoBtn();
+}
+function undo(){
+  if(G._busy){ toast("One moment — finishing the move…"); return; }
+  if(!G.history || !G.history.length){ toast("Nothing to take back yet."); return; }
+  clearTimeout(G._timer);
+  sfx.undo();
+  const s=G.history.pop();
+  G.board=s.board; G.captures={1:s.cap[1],2:s.cap[2]}; G.koPoint=s.koPoint;
+  G.lastMove=s.lastMove; G.passes=s.passes; G.toMove=s.toMove; G.gameOver=s.gameOver;
+  if(G.puzzle) G.puzzle.idx=s.pidx;
+  G.log=s.log.map(e=>({html:e.html,cls:e.cls}));
+  rebuildLog();
+  $('nextLevelBtn').classList.add('hidden');
+  G.hintMove=null;
+  updateLevelNav(); updateUI();
+  renderBoard();
+  if(G.mode==='learn') showGuide();
+  toast("↩️ Moved back a step.");
+}
+function rebuildLog(){
+  const box=$('log'); box.innerHTML='';
+  for(const e of G.log){ const div=document.createElement('div');
+    div.className='logitem'+(e.cls?(' '+e.cls):''); div.innerHTML=e.html; box.appendChild(div); }
+}
+function updateUndoBtn(){
+  const can = G && G.mode!=='pvp-online' && G.history && G.history.length>0 && !G._busy;
+  const btn=$('undoBtn'); if(btn) btn.disabled=!can;
+}
+
+function canHumanPlay(){
+  if(G.gameOver) return false;
+  if(G.mode==='learn') return G.toMove===G.humanColor;
+  if(G.mode==='pvp-local') return true;
+  if(G.mode==='pvp-online') return G.toMove===G.online.role;
+  return true;
+}
+
+function onBoardClick(e){
+  const c=svgCoords(e); if(!c)return;
+  if(G.puzzle && !G.gameOver){ handlePuzzleClick(c[0],c[1]); return; }
+  if(!canHumanPlay()){ if(G.mode==='learn') toast("Wait — it's Pip's turn 🐾"); return; }
+  doMove(c[0],c[1], G.toMove, true);
+}
+
+// Guided capture puzzles: the kid plays each glowing step; white auto-replies on scripted lines.
+function handlePuzzleClick(x,y){
+  if(G._busy) return;
+  const P=G.puzzle, step=P.steps[P.idx];
+  if(!step) return;
+  if(x!==step.glow[0] || y!==step.glow[1]){
+    sfx.wrong();
+    toast("Not quite — tap the glowing dot! ✨");
+    pushLog("🤔 Try the <b>glowing dot</b> — that's the move Pip suggests for this step.",'warn');
+    return;
+  }
+  const res=tryMove(G.board,x,y,BLACK,G.koPoint);
+  if(!res.legal){ toast("That spot isn't playable here."); return; }
+  snapshotForUndo();                       // remember state before this step
+  // apply the kid's move
+  G.board=res.board; G.koPoint=res.koPoint;
+  if(res.captured.length){ G.captures[BLACK]+=res.captured.length; }
+  G.lastMove=[x,y]; G.hintMove=null;
+  pushLog(`⚫ ${coordName(x,y)} — ${step.ok}`, res.captured.length?'tip':(/atari|net|trap/i.test(step.ok)?'warn':''));
+  G.animateLast=true; renderBoard(); updateUI();
+  if(res.captured.length){
+    playCaptureFx(res.captured.map(([cx,cy])=>({x:cx,y:cy,color:WHITE})));
+    sfx.capture(res.captured.length);
+  } else { sfx.place(); if(/atari|⚔️/.test(step.ok)) sfx.atari(); }
+
+  const finishedLevel=()=>{
+    G.gameOver=true; progress.done[G.level]=true; saveProgress();
+    $('guideLine').classList.add('hidden'); G.hintMove=null; setHint(); updateUI();
+    sfx.win(); confetti();
+    toast(`🎉 Level ${G.level} complete!`);
+    pushLog(`🌟 Lesson complete! ${G.level<20?`Level ${G.level+1} unlocked. 🔓`:`You're a Go master! 🏆`}`,'tip');
+    showNextLevel();
+  };
+
+  // white's scripted reply, then advance
+  const advance=()=>{
+    P.idx++;
+    if(P.idx>=P.steps.length || G.gameOver){ if(!G.gameOver) finishedLevel(); return; }
+    showGuide();
+  };
+
+  if(step.reply){
+    G._busy=true; updateUndoBtn();
+    G._timer=setTimeout(()=>{
+      const wr=tryMove(G.board,step.reply[0],step.reply[1],WHITE,G.koPoint);
+      if(wr.legal){
+        G.board=wr.board; G.koPoint=wr.koPoint; G.lastMove=[step.reply[0],step.reply[1]];
+        if(step.replySay) pushLog(`⚪ ${coordName(step.reply[0],step.reply[1])} — ${step.replySay}`,'');
+        G.animateLast=true; renderBoard(); updateUI(); sfx.place();
+      }
+      G._busy=false;
+      // if this step's own move already captured everything, we still finish
+      if(P.idx>=P.steps.length-1 && res.captured.length){ finishedLevel(); } else advance();
+      updateUndoBtn();
+    }, 560);
+  } else {
+    // no reply: either final capture (win) or move straight to next step
+    if(P.idx>=P.steps.length-1) finishedLevel(); else advance();
+  }
+}
+
+function doMove(x,y,color,byHuman){
+  const res=tryMove(G.board,x,y,color,G.koPoint);
+  if(!res.legal){
+    const why={taken:"Someone is already there!",ko:"That's a Ko — you can't take it right back. Play somewhere else first.",suicide:"That spot would have no liberties — a stone can't be placed where it would instantly die."}[res.reason]||"Illegal move.";
+    if(byHuman) toast(why);
+    return false;
+  }
+  if(byHuman) snapshotForUndo();           // remember state before your move (and Pip's reply)
+  // record analysis BEFORE mutating (for the note)
+  const note=analyzeMove(G.board,x,y,color,G.koPoint);
+  G.board=res.board; G.koPoint=res.koPoint; G.passes=0;
+  G.captures[color]+=res.captured.length;
+  G.lastMove=[x,y]; G.hintMove=null;
+
+  const who = (color===G.humanColor||(G.mode!=='learn'&&byHuman))?'you':'pip';
+  writeMoveNote(color, note, who, x, y);
+  G.toMove=other(color);
+
+  if(G.mode==='pvp-online') syncPush();
+  G.animateLast=true;
+  updateUI(); renderBoard();
+  // effects
+  if(res.captured.length){
+    playCaptureFx(res.captured.map(([cx,cy])=>({x:cx,y:cy,color:other(color)})));
+    sfx.capture(res.captured.length);
+  } else {
+    sfx.place();
+    if(note && note.tags && note.tags.includes('atari')) sfx.atari();
+  }
+  maybeAIMove();
+  if(G.mode==='learn') showGuide();
+  return true;
+}
+function coordName(x,y){ const L="ABCDEFGHJKLMNOPQRST"; return L[x]+(G.size-y); }
+function writeMoveNote(color, note, who, x, y){
+  const tags=note?note.tags:[];
+  let cls='', msg='';
+  const mover = color===BLACK?'⚫':'⚪';
+  if(tags.includes('capture')){cls='tip';msg=`${mover} ${coordName(x,y)} — captured ${note.captured} stone${note.captured>1?'s':''}! 🎉`;}
+  else if(tags.includes('save')){cls='tip';msg=`${mover} ${coordName(x,y)} — escaped atari, saving the group. 🛟`;}
+  else if(tags.includes('atari')){cls='warn';msg=`${mover} ${coordName(x,y)} — puts a group in <b>atari</b> (one liberty left)! ⚔️`;}
+  else if(tags.includes('connect')){cls='';msg=`${mover} ${coordName(x,y)} — connected stones into a stronger shape. 🔗`;}
+  else if(tags.includes('selfatari')){cls='warn';msg=`${mover} ${coordName(x,y)} — uh oh, this group now has just one liberty!`;}
+  else {cls='';msg=`${mover} played ${coordName(x,y)}.`;}
+  pushLog(msg,cls);
+  // extra coaching for the human in learn mode
+  if(G.mode==='learn' && color===G.humanColor && tags.includes('selfatari'))
+    pushLog("💡 Tip from Pip: try to keep at least two liberties so your stones don't get captured next turn.",'warn');
+}
+
+function maybeAIMove(){
+  if(G.mode!=='learn'||G.gameOver||G.toMove===G.humanColor)return;
+  G._timer=setTimeout(()=>{
+    if(G.gameOver)return;
+    const m=aiChoose(G.board,G.toMove,G.aiStrength,G.koPoint);
+    if(!m){ aiPass(); return; }
+    doMove(m.x,m.y,G.toMove,false);
+  }, 480+Math.random()*420);
+}
+function aiPass(){
+  G.passes++; G.lastMove=null; pushLog("⚪ Pip passes.",'');
+  G.toMove=other(G.toMove); updateUI(); renderBoard();
+  if(!checkEnd() && G.mode==='learn') showGuide();
+}
+
+function pass(){
+  if(!canHumanPlay())return;
+  snapshotForUndo();
+  G.passes++; G.lastMove=null;
+  pushLog(`${G.toMove===BLACK?'⚫':'⚪'} passed.`,'');
+  G.toMove=other(G.toMove);
+  if(G.mode==='pvp-online') syncPush();
+  updateUI(); renderBoard();
+  if(!checkEnd()) maybeAIMove();
+}
+function checkEnd(){
+  if(G.passes>=2){ endGame('Both players passed — the game is over!'); return true; }
+  return false;
+}
+function endGame(reason, forcedWinner){
+  G.gameOver=true;
+  const sc=scoreBoard(G.board,G.komi);
+  let winner = forcedWinner || (sc.black>sc.white?BLACK:WHITE);
+  const wName = winner===BLACK?'Black ⚫':'White ⚪';
+  pushLog(`🏁 ${reason} Final score — Black ${sc.black}, White ${sc.white.toFixed(1)}. ${wName} wins!`,'tip');
+  $('scoreVal').textContent=`B ${sc.black} · W ${sc.white.toFixed(1)}`;
+  updateUI(); renderBoard();
+  if(G.mode==='learn'){
+    const youWon = (winner===G.humanColor) || (forcedWinner===G.humanColor);
+    if(youWon){
+      progress.done[G.level]=true; saveProgress();
+      const next=G.level<20?` Level ${G.level+1} unlocked! 🔓`:` You finished every level — you're a Go master! 🏆`;
+      sfx.win(); confetti();
+      toast(`🎉 You won Level ${G.level}!`);
+      pushLog(`🌟 Lesson complete!${next}`,'tip');
+      showNextLevel();
+    }else{
+      pushLog("💪 Good try! Tap Restart to play this level again — use 💡 Hint whenever you're unsure.",'warn');
+    }
+  }
+  if(G.mode==='pvp-online') syncPush();
+}
+
+function doHint(){
+  if(G.gameOver) return;
+  if(G.mode==='learn' && G.toMove!==G.humanColor){ toast("It's Pip's turn — wait for your move!"); return; }
+  if(G.puzzle){
+    const step=G.puzzle.steps[G.puzzle.idx];
+    if(!step) return;
+    G.hintMove=[step.glow[0],step.glow[1]]; setHint();
+    pushLog(`💡 <b>Hint (${coordName(step.glow[0],step.glow[1])}):</b> ${step.tip}`,'tip');
+    $('log').scrollTop=0; return;
+  }
+  const m=bestHint(G.board,G.toMove,G.koPoint);
+  if(!m){ pushLog("💡 Pip says: no useful points left — you can Pass.",'tip'); return; }
+  G.hintMove=[m.x,m.y]; setHint();
+  pushLog(`💡 <b>Hint (${coordName(m.x,m.y)}):</b> ${annotate(m,'you')}`,'tip');
+  $('log').scrollTop=0;
+}
+
+function pushLog(html,cls){
+  G.log.unshift({html,cls});
+  const box=$('log');
+  const div=document.createElement('div');
+  div.className='logitem'+(cls?(' '+cls):'');
+  div.innerHTML=html; box.prepend(div);
+  while(box.children.length>40) box.removeChild(box.lastChild);
+}
+function updateUI(){
+  const meTurn=canHumanPlay();
+  $('turnDot').className='dot '+(G.toMove===BLACK?'black':'white');
+  let txt;
+  if(G.gameOver) txt='Game over';
+  else if(G.mode==='learn') txt = G.toMove===G.humanColor?'Your turn ⚫':"Pip thinking…";
+  else if(G.mode==='pvp-online') txt = (G.toMove===G.online.role?'Your turn':"Friend's turn") + (G.toMove===BLACK?' ⚫':' ⚪');
+  else txt = (G.toMove===BLACK?'Black':'White')+"'s turn";
+  $('turnText').textContent=txt;
+  $('capBlack').textContent=G.captures[BLACK];
+  $('capWhite').textContent=G.captures[WHITE];
+  $('hintBtn').disabled = G.mode==='pvp-local' ? false : !meTurn || G.gameOver;
+  $('passBtn').disabled = !meTurn || G.gameOver;
+  updateUndoBtn();
+  $('teachCard').classList.toggle('hidden', G.mode!=='learn' && !(G.level!=null));
+}
+
+/* =========================================================================
+   LEVEL SELECT
+   ========================================================================= */
+function renderLevels(){
+  const grid=$('levelGrid'); grid.innerHTML='';
+  const tiers=[[1,10,'Tier 1 · 9×9 — The Basics'],[11,16,'Tier 2 · 13×13 — Territory'],[17,20,'Tier 3 · 19×19 — Master']];
+  tiers.forEach(([a,b,name])=>{
+    const h=document.createElement('div');h.className='tierhead';h.textContent=name;grid.appendChild(h);
+    for(let i=a;i<=b;i++){
+      const L=LEVELS[i-1];
+      const tier = i<=10?'':(i<=16?'tier2':'tier3');
+      const el=document.createElement('button');
+      el.className='lvl '+tier;
+      el.innerHTML=`<div class="num">${i}</div>${progress.done[i]?'<div class="done">⭐</div>':''}
+        <h3>${L.t}</h3><div class="meta">${L.d}×${L.d} · ${L.puzzle?'🧩 Puzzle':'🎮 vs Pip'}</div>`;
+      el.onclick=()=>newGame({mode:'learn',size:L.d,level:i,aiStrength:L.s,humanColor:BLACK});
+      grid.appendChild(el);
+    }
+  });
+}
+
+/* =========================================================================
+   2-PLAYER SETUP + ONLINE SESSIONS (window.storage shared keys)
+   ========================================================================= */
+let setup={size:9, mode:null};
+function openSetup(){
+  setup={size:9,mode:null};
+  $('setupOverlay').classList.remove('hidden');
+  renderSetupHome();
+}
+function closeSetup(){ $('setupOverlay').classList.add('hidden'); }
+function renderSetupHome(){
+  const online = onlineAvailable();
+  const fb = Net.backend()==='firebase';
+  const noteTxt = fb
+    ? 'Online play is on — friends can join from any device, anywhere. 🌍'
+    : (online
+        ? 'Online play here works between Claude apps. To enable cross-device play on your deployed site, add a Firebase config (see SETUP-FIREBASE.md).'
+        : 'Online play needs Firebase (see SETUP-FIREBASE.md). You can still play on the same device!');
+  $('setupModal').innerHTML=`
+    <h2>👫 Play with a Friend</h2>
+    <p>Pick how you'd like to play together.</p>
+    <div class="opts" style="flex-direction:column">
+      <button class="btn green" id="m_local" style="font-size:16px">🛋️ Same device (pass & play)</button>
+      <button class="btn coral" id="m_create" style="font-size:16px" ${online?'':'disabled'}>📡 Create online session ${fb?'🌍':''}</button>
+      <button class="btn" id="m_join" style="font-size:16px" ${online?'':'disabled'}>🔗 Join with a code</button>
+    </div>
+    <p class="note" style="margin-top:14px">${noteTxt}</p>
+    <div style="margin-top:16px;text-align:right"><button class="btn ghost" id="m_cancel">Cancel</button></div>`;
+  $('m_cancel').onclick=closeSetup;
+  $('m_local').onclick=()=>chooseSize('local');
+  $('m_create').onclick=()=>chooseSize('create');
+  $('m_join').onclick=renderJoin;
+}
+function chooseSize(kind){
+  $('setupModal').innerHTML=`
+    <h2>Choose a board</h2>
+    <p>Smaller boards mean faster games. 9×9 is great to start!</p>
+    <div class="opts" id="sizeOpts">
+      <div class="opt active" data-s="9">9×9<br><span class="note">Quick</span></div>
+      <div class="opt" data-s="13">13×13<br><span class="note">Medium</span></div>
+      <div class="opt" data-s="19">19×19<br><span class="note">Full</span></div>
+    </div>
+    <div style="margin-top:18px;display:flex;justify-content:space-between">
+      <button class="btn ghost" id="back">Back</button>
+      <button class="btn green" id="go">${kind==='create'?'Create session':'Start game'}</button>
+    </div>`;
+  let size=9;
+  document.querySelectorAll('#sizeOpts .opt').forEach(o=>o.onclick=()=>{
+    document.querySelectorAll('#sizeOpts .opt').forEach(z=>z.classList.remove('active'));
+    o.classList.add('active'); size=+o.dataset.s;
+  });
+  $('back').onclick=renderSetupHome;
+  $('go').onclick=()=>{
+    if(kind==='local'){ closeSetup(); newGame({mode:'pvp-local',size}); }
+    else createSession(size);
+  };
+}
+function renderJoin(){
+  $('setupModal').innerHTML=`
+    <h2>🔗 Join a session</h2>
+    <p>Type the 4-letter code your friend shared with you.</p>
+    <input class="code" id="codeInput" maxlength="4" placeholder="ABCD">
+    <div style="margin-top:18px;display:flex;justify-content:space-between">
+      <button class="btn ghost" id="back">Back</button>
+      <button class="btn green" id="joinGo">Join game</button>
+    </div>`;
+  $('back').onclick=renderSetupHome;
+  $('joinGo').onclick=()=>joinSession($('codeInput').value.trim().toUpperCase());
+  $('codeInput').focus();
+}
+
+/* ===== ONLINE TRANSPORT ===============================================
+   Cross-device play uses Firebase Realtime Database when configured.
+   Paste your own Firebase web config below (see SETUP-FIREBASE.md).
+   The web config is NOT a secret — it's meant to live in client code.
+   If it's left as the placeholder (or Firebase fails to load), the app
+   automatically falls back to Claude's window.storage, and same-device
+   pass-and-play always works regardless.                                */
+const FIREBASE_CONFIG = {
+  apiKey:      "PASTE_API_KEY",
+  authDomain:  "PASTE_PROJECT.firebaseapp.com",
+  databaseURL: "https://PASTE_PROJECT-default-rtdb.firebaseio.com",
+  projectId:   "PASTE_PROJECT"
+};
+function firebaseConfigured(){
+  return typeof firebase!=='undefined'
+      && FIREBASE_CONFIG.databaseURL && !/PASTE_PROJECT/.test(FIREBASE_CONFIG.databaseURL);
+}
+let _fbDB=null;
+function fbDB(){
+  if(_fbDB) return _fbDB;
+  try{ if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG); _fbDB=firebase.database(); }
+  catch(e){ try{ _fbDB=firebase.database(); }catch(_){ return null; } }
+  return _fbDB;
+}
+const Net = {
+  backend(){ return firebaseConfigured() ? 'firebase' : (window.storage ? 'storage' : 'none'); },
+  _ref:null, _h:null, _timer:null,
+  async write(code, snap){
+    const data=JSON.stringify(snap);
+    if(this.backend()==='firebase'){ await fbDB().ref('sessions/'+code).set({d:data}); }
+    else if(this.backend()==='storage'){ await window.storage.set('lsgame-'+code, data, true); }
+  },
+  async read(code){
+    if(this.backend()==='firebase'){
+      const s=await fbDB().ref('sessions/'+code).once('value');
+      const v=s.val(); return v&&v.d ? JSON.parse(v.d) : null;
+    } else if(this.backend()==='storage'){
+      try{ const r=await window.storage.get('lsgame-'+code, true); return r&&r.value?JSON.parse(r.value):null; }catch(e){ return null; }
+    }
+    return null;
+  },
+  subscribe(code, cb){
+    this.unsubscribe();
+    if(this.backend()==='firebase'){
+      this._ref=fbDB().ref('sessions/'+code);
+      this._h=this._ref.on('value', s=>{ const v=s.val(); if(v&&v.d) cb(JSON.parse(v.d)); });
+    } else if(this.backend()==='storage'){
+      this._timer=setInterval(async()=>{ const v=await this.read(code); if(v) cb(v); }, 1500);
+    }
+  },
+  unsubscribe(){
+    if(this._ref&&this._h){ this._ref.off('value', this._h); this._ref=null; this._h=null; }
+    if(this._timer){ clearInterval(this._timer); this._timer=null; }
+  }
+};
+function onlineAvailable(){ return Net.backend()!=='none'; }
+
+function randCode(){const A="ABCDEFGHJKLMNPQRSTUVWXYZ";let c='';for(let i=0;i<4;i++)c+=A[Math.floor(Math.random()*A.length)];return c;}
+function snapshot(){
+  return {seq:G.online.seq, size:G.size, board:G.board, toMove:G.toMove, koPoint:G.koPoint,
+    captures:G.captures, passes:G.passes, lastMove:G.lastMove, gameOver:G.gameOver,
+    started:G._started, komi:G.komi};
+}
+async function syncPush(){
+  if(!G.online)return;
+  try{
+    G.online.seq=(G.online.seq||0)+1;
+    await Net.write(G.online.code, snapshot());
+  }catch(e){ toast('Could not sync — check connection.'); }
+}
+async function createSession(size){
+  const code=randCode();
+  closeSetup();
+  newGame({mode:'pvp-online',size,online:{code,role:BLACK,seq:0}});
+  G._started=false;
+  try{ await Net.write(code, snapshot()); }catch(e){ toast('Could not start the online session.'); }
+  const via = Net.backend()==='firebase' ? 'Friends can join from any device.' : 'Friends on Claude can join with this code.';
+  $('setupOverlay').classList.remove('hidden');
+  $('setupModal').innerHTML=`
+    <h2>📡 Session created!</h2>
+    <p>Share this code with your friend. You are <b>Black ⚫</b> and move first.</p>
+    <div class="codebig">${code}</div>
+    <p class="note" id="waitMsg">Waiting for your friend to join… ${via}</p>
+    <div style="margin-top:14px;text-align:right">
+      <button class="btn ghost" id="copyCode">Copy code</button>
+      <button class="btn coral" id="cancelSess">Cancel</button></div>`;
+  $('copyCode').onclick=()=>{navigator.clipboard?.writeText(code);toast('Code copied!');};
+  $('cancelSess').onclick=()=>{stopPolling();closeSetup();show('home');};
+  startPolling();
+}
+async function joinSession(code){
+  if(!/^[A-Z]{4}$/.test(code)){toast('Enter the 4-letter code.');return;}
+  let st;
+  try{ st=await Net.read(code); }catch(e){ st=null; }
+  if(!st){ toast('No session found with that code.'); return; }
+  closeSetup();
+  newGame({mode:'pvp-online',size:st.size,online:{code,role:WHITE,seq:st.seq||0}});
+  applyRemote(st);
+  G._started=true;
+  await syncPush();   // tells creator we joined (started=true, seq bumped)
+  toast('Joined! You are White ⚪.');
+  startPolling();
+}
+function applyRemote(st){
+  G.size=st.size; G.board=st.board; G.toMove=st.toMove; G.koPoint=st.koPoint;
+  G.captures=st.captures; G.passes=st.passes; G.lastMove=st.lastMove;
+  G.gameOver=st.gameOver; G.komi=st.komi; G._started=st.started;
+  G.online.seq=st.seq;
+  updateUI(); renderBoard();
+}
+// Called whenever the remote session state changes (Firebase push or storage poll).
+function onRemoteState(st){
+  if(!G||!G.online)return;
+  if((st.seq||0) > (G.online.seq||0)){
+    const justStarted = st.started && !G._started;
+    applyRemote(st);
+    if(justStarted){ $('setupOverlay').classList.add('hidden'); toast('Friend joined — game on! 🎮'); sfx.win(); }
+    if(!st.gameOver) pushLog(`Opponent played.${G.toMove===G.online.role?' Your turn!':''}`,'');
+  }
+}
+function startPolling(){ if(!G||!G.online)return; Net.subscribe(G.online.code, onRemoteState); }
+function stopPolling(){ Net.unsubscribe(); }
+
+
+/* =========================================================================
+   WIRE UP BUTTONS
+   ========================================================================= */
+$('startLearn').onclick=()=>{ stopPolling(); gotoLevel(1); };
+$('chooseLevel').onclick=()=>{ stopPolling(); show('levels'); };
+$('levelsBtn').onclick  =()=>{ stopPolling(); show('levels'); };
+$('startPvp').onclick  =()=>{ stopPolling(); openSetup(); };
+$('homeBtn').onclick   =()=>{ stopPolling(); show('home'); };
+$('hintBtn').onclick   =doHint;
+$('passBtn').onclick    =pass;
+$('undoBtn').onclick    =undo;
+$('soundBtn').onclick   =()=>{ muted=!muted; $('soundBtn').textContent=muted?'🔇':'🔊';
+  if(!muted){ audioCtx(); sfx.click(); } try{ if(window.storage) window.storage.set('ls_mute', muted?'1':'0', false); }catch(e){}
+  toast(muted?'🔇 Sound off':'🔊 Sound on'); };
+window.addEventListener('pointerdown',()=>{ if(actx&&actx.state==='suspended')actx.resume(); }, {capture:true});
+$('prevLvl').onclick    =()=>gotoLevel(G.level-1);
+$('nextLvl').onclick    =()=>gotoLevel(G.level+1);
+$('allLvls').onclick    =()=>{ stopPolling(); show('levels'); };
+$('nextLevelBtn').onclick=()=>gotoLevel(G.level+1);
+$('guideToggle').onclick=()=>{ G.autoGuide=!G.autoGuide; updateLevelNav(); showGuide();
+  toast(G.autoGuide?'Guidance on — Pip will suggest moves.':'Guidance off — you\'re on your own! 💪'); };
+$('scoreBtn').onclick   =()=>{ const sc=scoreBoard(G.board,G.komi); $('scoreVal').textContent=`B ${sc.black} · W ${sc.white.toFixed(1)}`; toast(`Black ${sc.black} · White ${sc.white.toFixed(1)} (includes ${G.komi} komi). Assumes all stones are alive.`); };
+$('resignBtn').onclick  =()=>{ if(G.gameOver)return;
+  if(G.mode==='learn'){ endGame('You resigned this lesson.', other(G.humanColor)); }
+  else if(G.mode==='pvp-online'){ endGame('A player resigned.', other(G.online.role)); }
+  else { endGame('A player resigned.', other(G.toMove)); } };
+$('restartBtn').onclick =()=>{
+  if(G.mode==='learn'){ gotoLevel(G.level); }
+  else if(G.mode==='pvp-local'){ newGame({mode:'pvp-local',size:G.size}); }
+  else toast('Online games can\'t be restarted — create a new session.');
+};
+
+document.querySelector('.logo').style.cursor='pointer';
+document.querySelector('.logo').onclick=()=>{ stopPolling(); show('home'); };
+
+hydrateProgress();
+renderLevels();
+show('home');
+</script>
