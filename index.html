@@ -519,16 +519,61 @@ const LEVELS=[
           [2,1,BLACK],[4,1,BLACK],[1,2,BLACK],[5,2,BLACK],[2,3,BLACK],[4,3,BLACK],[3,4,BLACK]],
    puzzle:{steps:[{glow:[3,0],tip:"Find the wall's one remaining liberty at the top!",ok:"🏆 FIVE stones captured in one move! You've mastered capturing. On to bigger boards!"}]}},
 
-  {t:"Territory Basics",   d:13,s:11, obj:"Surround more empty points than Pip.", txt:"Now full games begin! 🎮 Go is really about <b>territory</b> — empty space surrounded only by your stones. Use everything you learned about capturing to protect your area. Whoever surrounds more points wins."},
-  {t:"Corners First",      d:13,s:12, obj:"Take corners early and win the board.", txt:"Wise players take corners, then sides, then the centre. Corners need the fewest stones to enclose, so they're the best value early. Pip will suggest good points each turn."},
-  {t:"Walls & Influence",  d:13,s:13, obj:"Build a wall and use it to win.", txt:"A solid wall faces outward and controls the whole area in front of it. Trade a little territory for a powerful, thick wall."},
-  {t:"Reducing",           d:13,s:14, obj:"Shrink Pip's area without dying.", txt:"If Pip builds a big area, jump in lightly to shrink it before it grows too large. Don't be greedy — stay safe and keep your stones connected."},
-  {t:"Invading",           d:13,s:15, obj:"Live inside Pip's area and win.", txt:"Sometimes you must place a stone deep in enemy space and make two eyes to live. Risky, but it can flip the game!"},
-  {t:"Endgame Points",     d:13,s:16, obj:"Win the border fights for the points.", txt:"In the endgame, fight over the borders between territories. Each point matters — play the biggest boundary moves first."},
-  {t:"Full Board",         d:19,s:17, obj:"Take corners, connect, and out-score Pip.", txt:"The full 19×19 board the masters use! Spread out, take corners, then connect your areas into one big framework."},
-  {t:"Reading Ahead",      d:19,s:18, obj:"Out-think Pip and win on points.", txt:"Before you play, picture Pip's reply, then yours. Thinking two or three moves ahead is the secret to strong play."},
-  {t:"Whole-Board View",   d:19,s:19, obj:"Find the biggest points and win.", txt:"Don't get lost in one corner. Always ask: where is the biggest, most urgent point on the WHOLE board right now?"},
-  {t:"Master Challenge",   d:19,s:20, obj:"Beat Pip's strongest play to become a master!", txt:"The final test against Pip's best. Use everything: capturing, corners, walls, eyes, and reading ahead. Good luck, Go master! 🏆"},
+  {t:"Escape Atari",       d:13,s:11, obj:"Save your stone from capture.",
+   txt:"Now let's learn to <b>defend</b>! 🛡️ When your stone has only one liberty left it's in <b>atari</b> — about to be captured. Don't panic: <b>extend</b> it by adding a stone so it has more breathing room and escapes.",
+   setup:[[3,3,BLACK],[2,3,WHITE],[4,3,WHITE],[3,2,WHITE]],
+   puzzle:{steps:[{glow:[3,4],tip:"Extend your stone into the open space to escape.",ok:"🛡️ Saved! Your group now has more liberties, so Pip can't capture it."}]}},
+
+  {t:"Run to Your Friends", d:13,s:12, obj:"Escape by connecting to a friendly stone.",
+   txt:"The safest way to run is <b>toward your own stones</b>. Your stone is in atari — escape by extending so you join up with your friendly stone below. Together they're strong!",
+   setup:[[3,3,BLACK],[3,5,BLACK],[2,3,WHITE],[4,3,WHITE],[3,2,WHITE]],
+   puzzle:{steps:[{glow:[3,4],tip:"Extend down to link up with your friendly stone.",ok:"🤝 Connected! Joined stones share liberties and are much safer than lone stones."}]}},
+
+  {t:"Connect the Cut",    d:13,s:13, obj:"Connect your stones before Pip splits them.",
+   txt:"Two of your stones have a gap between them, and Pip is <b>peeping</b> — threatening to cut through. Defend by <b>connecting</b> the gap so your stones become one solid, strong group.",
+   setup:[[3,3,BLACK],[5,3,BLACK],[4,4,WHITE]],
+   puzzle:{steps:[{glow:[4,3],tip:"Fill the gap to connect your two stones.",ok:"🔗 Connected! One strong group is much harder to attack than two weak ones."}]}},
+
+  {t:"Capture the Cutter", d:13,s:14, obj:"Capture the stone splitting your group.",
+   txt:"Pip slipped a stone <b>between</b> your stones to cut them apart. But that cutting stone is weak — it only has one liberty. Defend by capturing it, and your stones reconnect!",
+   setup:[[3,3,BLACK],[5,3,BLACK],[4,2,BLACK],[4,3,WHITE]],
+   puzzle:{steps:[{glow:[4,4],tip:"Take the cutting stone's last liberty to capture it.",ok:"🎉 Captured the cutter! Taking the attacking stone is a great way to defend."}]}},
+
+  {t:"Two Eyes = Life",    d:13,s:15, obj:"Make two eyes so your group lives forever.",
+   txt:"The golden rule of defense: a group with <b>two separate eyes</b> can NEVER be captured! Your group surrounds a row of three empty points. Play the <b>middle</b> one to split it into two eyes — alive forever! 👁️👁️",
+   setup:[[1,0,BLACK],[2,0,BLACK],[3,0,BLACK],[0,1,BLACK],[4,1,BLACK],[1,2,BLACK],[2,2,BLACK],[3,2,BLACK]],
+   puzzle:{steps:[{glow:[2,1],tip:"Play the middle point to make TWO separate eyes.",ok:"👁️👁️ Two eyes — your group is alive forever! Pip can't play in either eye without being captured."}]}},
+
+  {t:"Defend Your Corner", d:13,s:16, obj:"Capture Pip's invading stone.",
+   txt:"Pip invaded your corner, hoping to live inside your territory. Chase the invader into the corner where it has nowhere to go, and capture it to keep your area safe.",
+   setup:[[2,0,BLACK],[2,1,BLACK],[2,2,BLACK],[1,2,BLACK],[0,2,BLACK],[1,1,WHITE]],
+   puzzle:{steps:[
+     {glow:[1,0],tip:"Put the invader in atari.",ok:"⚔️ Atari! The invader scrambles into the corner…",reply:[0,1],replySay:"⚪ Pip runs to the corner — a dead end!"},
+     {glow:[0,0],tip:"Take its last liberty to capture it.",ok:"🎉 Invader captured! Your corner is safe and sound."}]}},
+
+  {t:"Run and Connect",    d:19,s:17, obj:"Escape the chase and reach your friend.",
+   txt:"Full board! Pip put your stone in atari and will chase it. Keep extending toward your friendly stone on the right — once you connect, you're safe. Don't run into empty corners alone!",
+   setup:[[3,3,BLACK],[6,3,BLACK],[3,2,WHITE],[2,3,WHITE],[3,4,WHITE]],
+   puzzle:{steps:[
+     {glow:[4,3],tip:"Extend toward your friend to escape the atari.",ok:"🏃 You're running! Pip gives chase…",reply:[4,4],replySay:"⚪ Pip follows along underneath."},
+     {glow:[5,3],tip:"Connect to your friendly stone on the right!",ok:"🤝 Connected and safe! Running toward your own stones is the way to escape."}]}},
+
+  {t:"Capture to Connect", d:19,s:18, obj:"Capture both cutting stones at once.",
+   txt:"Pip pushed two stones in to cut your group apart. They share just one liberty — capture both in a single move to reconnect everything and stay strong.",
+   setup:[[3,3,BLACK],[4,3,BLACK],[2,4,BLACK],[5,4,BLACK],[3,5,BLACK],[3,4,WHITE],[4,4,WHITE]],
+   puzzle:{steps:[{glow:[4,5],tip:"Fill the cutters' last shared liberty to capture both.",ok:"🎉 Both cutters captured! Your group is whole again and very strong."}]}},
+
+  {t:"The Vital Point",    d:19,s:19, obj:"Find the key point to make two eyes.",
+   txt:"Your surrounded group has a bent eye-space of three points. There's one <b>vital point</b> that makes two eyes — if Pip plays it first, your group dies! Find it before Pip does and live. 👁️👁️",
+   setup:[[0,1,BLACK],[1,0,BLACK],[1,2,BLACK],[3,1,BLACK],[2,0,BLACK],[3,2,BLACK],[2,3,BLACK]],
+   puzzle:{steps:[{glow:[2,1],tip:"Play the bend — the vital point — to make two eyes.",ok:"👁️👁️ Two eyes made! You found the vital point and your group lives. Masterful defense!"}]}},
+
+  {t:"Master Defense",     d:19,s:20, obj:"Escape, capture the cutter, and connect.",
+   txt:"The final defense challenge! 🏆 Your stone is in atari and a cutting stone blocks the way to your friend. One clever move escapes the atari AND captures the cutter at once — then connect up to finish safe. Use everything you've learned, Go master!",
+   setup:[[3,3,BLACK],[6,3,BLACK],[5,2,BLACK],[5,4,BLACK],[3,2,WHITE],[2,3,WHITE],[3,4,WHITE],[5,3,WHITE]],
+   puzzle:{steps:[
+     {glow:[4,3],tip:"Extend here — it escapes the atari AND captures the cutter!",ok:"🎉 Escaped AND captured the cutter in one move! Pip tries once more…",reply:[4,4],replySay:"⚪ Pip plays another attacking stone."},
+     {glow:[5,3],tip:"Connect to your friend to make one unbreakable group.",ok:"🏆 Connected and completely safe! You've mastered defense — you're a true Go champion! 🎓"}]}},
 ];
 const KOMI = sz => (sz===9?5.5:6.5);
 
@@ -536,6 +581,7 @@ const KOMI = sz => (sz===9?5.5:6.5);
    APP STATE + helpers
    ========================================================================= */
 let G=null;            // current game state
+let guidePref=true;    // session-wide: stays off once the player turns it off
 let progress = loadProgress();
 const $=id=>document.getElementById(id);
 function show(id){['home','levels','game'].forEach(s=>$(s).classList.toggle('hidden',s!==id));}
@@ -708,8 +754,8 @@ function newGame(opts){
     lastMove:null, hintMove:null, gameOver:false, komi:KOMI(opts.size),
     level:opts.level??null, humanColor:opts.humanColor??BLACK,
     aiStrength:opts.aiStrength??10, log:[], puzzle:null,
-    autoGuide:(opts.mode==='learn'),
-    history:[], _timer:null, _busy:false,
+    autoGuide:(opts.mode==='learn' && guidePref),
+    history:[], _timer:null, _busy:false, _atariWarned:0,
     online:opts.online??null   // {code, role, seq}
   };
   $('boardLabel').textContent=`${opts.size}×${opts.size} board`;
@@ -766,7 +812,9 @@ function showGuide(){
   if(G.toMove!==G.humanColor){ G.hintMove=null; gl.classList.add('hidden'); setHint(); return; }
   const m=bestHint(G.board,G.humanColor,G.koPoint);
   if(!m){ G.hintMove=null; gl.innerHTML="👍 No urgent move left — you can <b>Pass</b> to finish and count the score."; gl.classList.remove('hidden'); setHint(); return; }
-  G.hintMove=[m.x,m.y]; gl.innerHTML=`👉 <b>Pip suggests ${coordName(m.x,m.y)}:</b> ${annotate(m,'you')}`;
+  const danger=maxAtariGroup(G.humanColor);
+  const prefix = danger.size>=3 ? `⚠️ <b>Your ${danger.size}-stone group is in atari!</b> ` : '';
+  G.hintMove=[m.x,m.y]; gl.innerHTML=`${prefix}👉 <b>Pip suggests ${coordName(m.x,m.y)}:</b> ${annotate(m,'you')}`;
   gl.classList.remove('hidden'); setHint();
 }
 
@@ -918,11 +966,46 @@ function doMove(x,y,color,byHuman){
     sfx.place();
     if(note && note.tags && note.tags.includes('atari')) sfx.atari();
   }
+  // teach the two-eyes rule whenever a big group comes off the board
+  if(res.captured.length>=4){
+    const youCaptured = (color===G.humanColor) || (G.mode!=='learn' && byHuman);
+    const canUndo = G.mode!=='pvp-online';
+    if(youCaptured)
+      pushLog(`🎉 Big capture — <b>${res.captured.length} stones</b>! That whole group had only one liberty left, so it all came off at once. Remember: a group needs <b>two separate eyes</b> to be safe.`,'tip');
+    else
+      pushLog(`😮 Pip captured <b>${res.captured.length}</b> of your stones! That group had only ONE liberty (one "eye"). A group needs <b>two separate eyes</b> to live.${canUndo?' Tip: press ↩️ Undo to try a different move.':''}`,'warn');
+  }
+  dangerCheck();
   maybeAIMove();
   if(G.mode==='learn') showGuide();
   return true;
 }
 function coordName(x,y){ const L="ABCDEFGHJKLMNOPQRST"; return L[x]+(G.size-y); }
+
+// Find the player's biggest group that has only ONE liberty left (in atari).
+function maxAtariGroup(color){
+  const n=G.size, seen=new Set(); let best=0, lib=null;
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    if(G.board[y][x]!==color||seen.has(x+','+y))continue;
+    const g=group(G.board,x,y);
+    for(const [sx,sy] of g.stones) seen.add(sx+','+sy);
+    if(g.liberties.size===1 && g.stones.length>best){ best=g.stones.length; lib=[...g.liberties][0].split(',').map(Number); }
+  }
+  return {size:best, lib};
+}
+// Warn the kid (once, when danger appears or grows) if one of THEIR groups is about to be captured.
+function dangerCheck(){
+  if(G.mode!=='learn'||G.gameOver){ return; }
+  const a=maxAtariGroup(G.humanColor);
+  if(a.size>=3){
+    if(a.size>(G._atariWarned||0)){
+      pushLog(`⚠️ Careful! Your group of <b>${a.size} stones</b> is in <b>atari</b> — only ONE liberty left${a.lib?` (the empty point at ${coordName(a.lib[0],a.lib[1])})`:''}. Play next to it to add breathing room, or Pip can capture the whole group in one move!`,'warn');
+      toast(`⚠️ Your ${a.size}-stone group is in danger!`);
+    }
+    G._atariWarned=a.size;
+  } else { G._atariWarned=0; }
+}
+
 function writeMoveNote(color, note, who, x, y){
   const tags=note?note.tags:[];
   let cls='', msg='';
@@ -1039,7 +1122,7 @@ function updateUI(){
    ========================================================================= */
 function renderLevels(){
   const grid=$('levelGrid'); grid.innerHTML='';
-  const tiers=[[1,10,'Tier 1 · 9×9 — The Basics'],[11,16,'Tier 2 · 13×13 — Territory'],[17,20,'Tier 3 · 19×19 — Master']];
+  const tiers=[[1,10,'Tier 1 · 9×9 — Capturing'],[11,16,'Tier 2 · 13×13 — Defending'],[17,20,'Tier 3 · 19×19 — Master Defense']];
   tiers.forEach(([a,b,name])=>{
     const h=document.createElement('div');h.className='tierhead';h.textContent=name;grid.appendChild(h);
     for(let i=a;i<=b;i++){
@@ -1134,10 +1217,14 @@ function renderJoin(){
    automatically falls back to Claude's window.storage, and same-device
    pass-and-play always works regardless.                                */
 const FIREBASE_CONFIG = {
-  apiKey:      "AIzaSyDspNUXlFn7DxJ80GGGD47-vwoskUEteSk",
-  authDomain:  "go-little-stones.firebaseapp.com",
-  databaseURL: "https://go-little-stones-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:   "go-little-stones"
+  apiKey:            "AIzaSyDspNUXlFn7DxJ80GGGD47-vwoskUEteSk",
+  authDomain:        "go-little-stones.firebaseapp.com",
+  databaseURL:       "https://go-little-stones-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "go-little-stones",
+  storageBucket:     "go-little-stones.firebasestorage.app",
+  messagingSenderId: "12027206757",
+  appId:             "1:12027206757:web:4d4b36adc8022b9525ba8c",
+  measurementId:     "G-VDVG1NY43Y"
 };
 function firebaseConfigured(){
   return typeof firebase!=='undefined'
@@ -1269,8 +1356,8 @@ $('prevLvl').onclick    =()=>gotoLevel(G.level-1);
 $('nextLvl').onclick    =()=>gotoLevel(G.level+1);
 $('allLvls').onclick    =()=>{ stopPolling(); show('levels'); };
 $('nextLevelBtn').onclick=()=>gotoLevel(G.level+1);
-$('guideToggle').onclick=()=>{ G.autoGuide=!G.autoGuide; updateLevelNav(); showGuide();
-  toast(G.autoGuide?'Guidance on — Pip will suggest moves.':'Guidance off — you\'re on your own! 💪'); };
+$('guideToggle').onclick=()=>{ G.autoGuide=!G.autoGuide; guidePref=G.autoGuide; updateLevelNav(); showGuide();
+  toast(G.autoGuide?'Guidance on — Pip will suggest moves.':'Guidance off for the rest of this session! 💪'); };
 $('scoreBtn').onclick   =()=>{ const sc=scoreBoard(G.board,G.komi); $('scoreVal').textContent=`B ${sc.black} · W ${sc.white.toFixed(1)}`; toast(`Black ${sc.black} · White ${sc.white.toFixed(1)} (includes ${G.komi} komi). Assumes all stones are alive.`); };
 $('resignBtn').onclick  =()=>{ if(G.gameOver)return;
   if(G.mode==='learn'){ endGame('You resigned this lesson.', other(G.humanColor)); }
