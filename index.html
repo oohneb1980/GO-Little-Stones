@@ -130,6 +130,13 @@
   .opt.active{border-color:var(--green);background:#eaf5ec;color:var(--green-dk)}
   input.code{width:100%;font-family:var(--rounded);font-size:24px;letter-spacing:6px;text-align:center;text-transform:uppercase;
     padding:12px;border-radius:14px;border:2px solid #ecdcbb;background:#fff}
+  .botgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-height:240px;overflow:auto;padding:2px}
+  .botopt{display:flex;flex-direction:column;gap:1px;text-align:left;padding:9px 11px;border-radius:12px;
+    background:#fff;border:2px solid #ecdcbb;font-family:var(--rounded);cursor:pointer}
+  .botopt b{font-size:14px;color:var(--ink)}
+  .botopt span{font-size:11px;color:var(--ink-soft);font-weight:700}
+  .botopt .bn{color:var(--green-dk)}
+  .botopt.active{border-color:var(--green);background:#eaf5ec}
   .codebig{font-family:var(--rounded);font-size:40px;letter-spacing:10px;text-align:center;color:var(--green-dk);
     background:#fff;border-radius:16px;padding:14px;margin:10px 0;border:2px dashed var(--green)}
   .note{font-size:12.5px;color:var(--ink-soft);font-weight:600;line-height:1.4}
@@ -192,6 +199,7 @@
         <div class="cta">
           <button class="btn green" id="startLearn">🎓 Start Learning (Level 1)</button>
           <button class="btn" id="chooseLevel">📚 Choose a Level</button>
+          <button class="btn" id="botBtn">🤖 Play vs Pip</button>
           <button class="btn coral" id="startPvp">👫 Play with a Friend</button>
         </div>
       </div>
@@ -577,6 +585,21 @@ const LEVELS=[
 ];
 const KOMI = sz => (sz===9?5.5:6.5);
 
+// Pip's strength ladder for "Play vs Pip" — 10 levels mapped to Go ranks.
+// (Pip is a friendly heuristic bot; the ranks are the intended difficulty, not official ratings.)
+const BOTS=[
+  {lvl:1,  rank:"30–25 kyu", name:"Absolute Beginner", str:2},
+  {lvl:2,  rank:"24–20 kyu", name:"Beginner",          str:4},
+  {lvl:3,  rank:"19–15 kyu", name:"Novice",            str:6},
+  {lvl:4,  rank:"14–11 kyu", name:"Improver",          str:8},
+  {lvl:5,  rank:"10–8 kyu",  name:"Intermediate",      str:11},
+  {lvl:6,  rank:"7–5 kyu",   name:"Club Player",        str:13},
+  {lvl:7,  rank:"4–2 kyu",   name:"Strong Club",        str:15},
+  {lvl:8,  rank:"1 kyu–1 dan",name:"Expert",            str:17},
+  {lvl:9,  rank:"2–4 dan",   name:"Master",             str:19},
+  {lvl:10, rank:"5–7 dan",   name:"Grandmaster",        str:20},
+];
+
 /* =========================================================================
    APP STATE + helpers
    ========================================================================= */
@@ -756,9 +779,10 @@ function newGame(opts){
     aiStrength:opts.aiStrength??10, log:[], puzzle:null,
     autoGuide:(opts.mode==='learn' && guidePref),
     history:[], _timer:null, _busy:false, _atariWarned:0,
+    botLabel:opts.botLabel||null,
     online:opts.online??null   // {code, role, seq}
   };
-  $('boardLabel').textContent=`${opts.size}×${opts.size} board`;
+  $('boardLabel').textContent=`${opts.size}×${opts.size} board` + (G.mode==='bot'?` · vs Pip`:'');
   $('nextLevelBtn').classList.add('hidden');
   if(opts.level!=null){
     const L=LEVELS[opts.level-1];
@@ -767,6 +791,10 @@ function newGame(opts){
     $('teachCard').classList.remove('hidden');
     $('teachTitle').textContent=`Level ${opts.level}: ${L.t}`;
     $('teachText').innerHTML=L.txt + (L.obj?`<div class="objective">🎯 Goal: ${L.obj}</div>`:'');
+  }else if(G.mode==='bot'){
+    $('teachCard').classList.remove('hidden');
+    $('teachTitle').textContent='🤖 Playing Pip';
+    $('teachText').innerHTML=`You are <b>Black ⚫</b> versus Pip — <b>${G.botLabel}</b>. Black moves first. Tap 💡 <b>Hint</b> any time, and try to surround more territory than Pip. Tap 📊 Score to see who's ahead.<div class="objective">🎯 Goal: out-score Pip to win!</div>`;
   }else{
     $('teachTitle').textContent = G.mode==='pvp-online'?'Online match':'Pass & Play';
     $('teachText').innerHTML = G.mode==='pvp-online'
@@ -779,7 +807,8 @@ function newGame(opts){
     pushLog(G.puzzle
       ? `Puzzle! ${L.obj} Follow the glowing dot — Pip will guide every step. 🐾`
       : `Level ${opts.level}: ${L.t}. You are Black ⚫ and move first. Pip's tip appears each turn!`,'tip');
-  } else pushLog('New game! Black ⚫ moves first.','tip');
+  } else if(G.mode==='bot') pushLog(`New game vs Pip — ${G.botLabel}. You are Black ⚫ and move first. Good luck! 🤖`,'tip');
+  else pushLog('New game! Black ⚫ moves first.','tip');
   updateLevelNav(); updateUI(); renderBoard(); showGuide();
 }
 
@@ -863,7 +892,7 @@ function updateUndoBtn(){
 
 function canHumanPlay(){
   if(G.gameOver) return false;
-  if(G.mode==='learn') return G.toMove===G.humanColor;
+  if(G.mode==='learn'||G.mode==='bot') return G.toMove===G.humanColor;
   if(G.mode==='pvp-local') return true;
   if(G.mode==='pvp-online') return G.toMove===G.online.role;
   return true;
@@ -872,7 +901,7 @@ function canHumanPlay(){
 function onBoardClick(e){
   const c=svgCoords(e); if(!c)return;
   if(G.puzzle && !G.gameOver){ handlePuzzleClick(c[0],c[1]); return; }
-  if(!canHumanPlay()){ if(G.mode==='learn') toast("Wait — it's Pip's turn 🐾"); return; }
+  if(!canHumanPlay()){ if(G.mode==='learn'||G.mode==='bot') toast("Wait — it's Pip's turn 🐾"); return; }
   doMove(c[0],c[1], G.toMove, true);
 }
 
@@ -977,7 +1006,7 @@ function doMove(x,y,color,byHuman){
   }
   dangerCheck();
   maybeAIMove();
-  if(G.mode==='learn') showGuide();
+  if(G.mode==='learn'||G.mode==='bot') showGuide();
   return true;
 }
 function coordName(x,y){ const L="ABCDEFGHJKLMNOPQRST"; return L[x]+(G.size-y); }
@@ -995,7 +1024,7 @@ function maxAtariGroup(color){
 }
 // Warn the kid (once, when danger appears or grows) if one of THEIR groups is about to be captured.
 function dangerCheck(){
-  if(G.mode!=='learn'||G.gameOver){ return; }
+  if(!(G.mode==='learn'||G.mode==='bot')||G.gameOver){ return; }
   const a=maxAtariGroup(G.humanColor);
   if(a.size>=3){
     if(a.size>(G._atariWarned||0)){
@@ -1023,7 +1052,7 @@ function writeMoveNote(color, note, who, x, y){
 }
 
 function maybeAIMove(){
-  if(G.mode!=='learn'||G.gameOver||G.toMove===G.humanColor)return;
+  if(!(G.mode==='learn'||G.mode==='bot')||G.gameOver||G.toMove===G.humanColor)return;
   G._timer=setTimeout(()=>{
     if(G.gameOver)return;
     const m=aiChoose(G.board,G.toMove,G.aiStrength,G.koPoint);
@@ -1034,7 +1063,7 @@ function maybeAIMove(){
 function aiPass(){
   G.passes++; G.lastMove=null; pushLog("⚪ Pip passes.",'');
   G.toMove=other(G.toMove); updateUI(); renderBoard();
-  if(!checkEnd() && G.mode==='learn') showGuide();
+  if(!checkEnd() && (G.mode==='learn'||G.mode==='bot')) showGuide();
 }
 
 function pass(){
@@ -1072,12 +1101,17 @@ function endGame(reason, forcedWinner){
       pushLog("💪 Good try! Tap Restart to play this level again — use 💡 Hint whenever you're unsure.",'warn');
     }
   }
+  if(G.mode==='bot'){
+    const youWon = (winner===G.humanColor) || (forcedWinner===G.humanColor);
+    if(youWon){ sfx.win(); confetti(); toast('🎉 You beat Pip!'); pushLog(`🏆 You beat Pip at ${G.botLabel}! Try a stronger level for a bigger challenge.`,'tip'); }
+    else pushLog(`💪 Pip won this round. Tap ↺ Restart for a rematch, or pick a lower level from 🤖 Play vs Pip.`,'warn');
+  }
   if(G.mode==='pvp-online') syncPush();
 }
 
 function doHint(){
   if(G.gameOver) return;
-  if(G.mode==='learn' && G.toMove!==G.humanColor){ toast("It's Pip's turn — wait for your move!"); return; }
+  if((G.mode==='learn'||G.mode==='bot') && G.toMove!==G.humanColor){ toast("It's Pip's turn — wait for your move!"); return; }
   if(G.puzzle){
     const step=G.puzzle.steps[G.puzzle.idx];
     if(!step) return;
@@ -1106,6 +1140,7 @@ function updateUI(){
   let txt;
   if(G.gameOver) txt='Game over';
   else if(G.mode==='learn') txt = G.toMove===G.humanColor?'Your turn ⚫':"Pip thinking…";
+  else if(G.mode==='bot') txt = G.toMove===G.humanColor?'Your turn ⚫':"Pip thinking… 🤖";
   else if(G.mode==='pvp-online') txt = (G.toMove===G.online.role?'Your turn':"Friend's turn") + (G.toMove===BLACK?' ⚫':' ⚪');
   else txt = (G.toMove===BLACK?'Black':'White')+"'s turn";
   $('turnText').textContent=txt;
@@ -1114,7 +1149,7 @@ function updateUI(){
   $('hintBtn').disabled = G.mode==='pvp-local' ? false : !meTurn || G.gameOver;
   $('passBtn').disabled = !meTurn || G.gameOver;
   updateUndoBtn();
-  $('teachCard').classList.toggle('hidden', G.mode!=='learn' && !(G.level!=null));
+  $('teachCard').classList.toggle('hidden', !(G.mode==='learn'||G.mode==='bot'||G.level!=null));
 }
 
 /* =========================================================================
@@ -1136,6 +1171,43 @@ function renderLevels(){
       grid.appendChild(el);
     }
   });
+}
+
+/* ===== PLAY VS PIP (single-player vs the bot) ===== */
+function startBotGame(size, botIdx){
+  const b=BOTS[botIdx];
+  closeSetup(); stopPolling();
+  newGame({mode:'bot', size, aiStrength:b.str, humanColor:BLACK, botLabel:`Level ${b.lvl} · ${b.name} (${b.rank})`});
+}
+function openBotSetup(){
+  let size=9, bi=0;
+  $('setupOverlay').classList.remove('hidden');
+  const render=()=>{
+    $('setupModal').innerHTML=`
+      <h2>🤖 Play vs Pip</h2>
+      <p>Choose a board and how strong Pip should be.</p>
+      <div class="field"><label>Board size</label>
+        <div class="opts" id="bSize">
+          <div class="opt ${size===9?'active':''}" data-s="9">9×9<br><span class="note">Quick</span></div>
+          <div class="opt ${size===13?'active':''}" data-s="13">13×13<br><span class="note">Medium</span></div>
+          <div class="opt ${size===19?'active':''}" data-s="19">19×19<br><span class="note">Full</span></div>
+        </div></div>
+      <div class="field"><label>Pip's strength (rank)</label>
+        <div class="botgrid" id="bLvl">
+          ${BOTS.map((b,i)=>`<button class="botopt ${i===bi?'active':''}" data-i="${i}"><b>Level ${b.lvl}</b><span>${b.rank}</span><span class="bn">${b.name}</span></button>`).join('')}
+        </div>
+        <p class="note" style="margin-top:8px">Pip will play at about <b>${BOTS[bi].rank}</b> — ${BOTS[bi].name}. (Friendly bot; ranks are the target difficulty.)</p>
+      </div>
+      <div style="margin-top:8px;display:flex;justify-content:space-between">
+        <button class="btn ghost" id="bCancel">Cancel</button>
+        <button class="btn green" id="bStart">Start game</button>
+      </div>`;
+    document.querySelectorAll('#bSize .opt').forEach(o=>o.onclick=()=>{ size=+o.dataset.s; render(); });
+    document.querySelectorAll('#bLvl .botopt').forEach(o=>o.onclick=()=>{ bi=+o.dataset.i; render(); });
+    $('bCancel').onclick=closeSetup;
+    $('bStart').onclick=()=>startBotGame(size,bi);
+  };
+  render();
 }
 
 /* =========================================================================
@@ -1344,6 +1416,7 @@ $('startLearn').onclick=()=>{ stopPolling(); gotoLevel(1); };
 $('chooseLevel').onclick=()=>{ stopPolling(); show('levels'); };
 $('levelsBtn').onclick  =()=>{ stopPolling(); show('levels'); };
 $('startPvp').onclick  =()=>{ stopPolling(); openSetup(); };
+$('botBtn').onclick    =()=>{ stopPolling(); openBotSetup(); };
 $('homeBtn').onclick   =()=>{ stopPolling(); show('home'); };
 $('hintBtn').onclick   =doHint;
 $('passBtn').onclick    =pass;
@@ -1365,6 +1438,7 @@ $('resignBtn').onclick  =()=>{ if(G.gameOver)return;
   else { endGame('A player resigned.', other(G.toMove)); } };
 $('restartBtn').onclick =()=>{
   if(G.mode==='learn'){ gotoLevel(G.level); }
+  else if(G.mode==='bot'){ newGame({mode:'bot', size:G.size, aiStrength:G.aiStrength, humanColor:BLACK, botLabel:G.botLabel}); }
   else if(G.mode==='pvp-local'){ newGame({mode:'pvp-local',size:G.size}); }
   else toast('Online games can\'t be restarted — create a new session.');
 };
